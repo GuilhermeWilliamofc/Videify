@@ -1,0 +1,13 @@
+body{
+    background-color: #761fff73;
+}
+
+div#fundobranco{
+    background-color: white; 
+    padding: 15px 15px; 
+    border-radius: 10px;
+}
+
+img#logo{
+    width: 40px;
+}
