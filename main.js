@@ -14,6 +14,11 @@ function createWindow() {
     }
   });
 
+  // Remove a barra de menu
+  mainWindow.setMenuBarVisibility(false);
+  // Ou, para remover completamente:
+  // mainWindow.removeMenu();
+
   expressApp.listen(8081, () => {
     console.log('Servidor Express rodando em http://localhost:8081');
     mainWindow.loadURL('http://localhost:8081');
