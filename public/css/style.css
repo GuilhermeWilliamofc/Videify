@@ -8,6 +8,22 @@ div#fundobranco{
     border-radius: 10px;
 }
 
-img#logo{
+img.logo{
     width: 40px;
+}
+
+img.logo2{
+    width: 20px;
+}
+
+li.nav-item{
+    box-sizing: border-box;
+    margin-right: 10px;
+}
+
+li.nav-item:hover{
+    background-color: #461399;
+    outline: 2px solid white;
+    border-radius: 10px;
+    transition-duration: 0.3s;
 }
