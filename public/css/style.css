@@ -27,3 +27,97 @@ li.nav-item:hover{
     border-radius: 10px;
     transition-duration: 0.3s;
 }
+
+button.botao{
+    background-color: blueviolet;
+    color: white;
+    border: 2px solid white;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+button.botao:hover, div.input > input[type="submit"]:hover, div.input > input[type="reset"]:hover{
+    background-color: white;
+    color: blueviolet;
+    border: 2px solid blueviolet;
+    transition-duration: 0.3s;
+}
+
+button.botao:active, div.input > input[type="submit"]:active, div.input > input[type="reset"]:active{
+    background-color: rgb(168, 132, 202);
+    color: white;
+}
+
+a.link{
+    text-decoration: none;
+}
+
+label{
+    margin-right: 5px;
+}
+
+input{
+    box-sizing: border-box;
+    border: 2px solid rgb(154, 46, 255);
+    border-radius: 10px;
+    padding: 6px;
+    transition-duration: 0.3s;
+}
+
+input::placeholder{
+    color: white;
+}
+
+textarea{
+    background-color: rgb(181, 142, 218);
+    box-sizing: border-box;
+    border: 2px solid rgb(154, 46, 255);
+    border-radius: 10px;
+    padding: 6px;
+    transition-duration: 0.3s;
+}
+
+textarea:focus-within{
+    background-color: white;
+    color: black;
+    transition-duration: 0.3s;
+}
+
+textarea:focus-within::placeholder{
+    color: black;
+    transition-duration: 0.3s;
+}
+
+textarea::placeholder{
+    color: white;
+}
+
+div.input{
+    display: flex;
+    margin-bottom: 10px;
+}
+
+div.input > input[type="text"]{
+    background-color: rgb(181, 142, 218);
+    width: 500px;
+}
+
+div.input > input[type="text"]:focus-within{
+    background-color: white;
+    color: black;
+    transition-duration: 0.3s;
+}
+
+div.input > input[type="text"]:focus-within::placeholder{
+    color: black;
+    transition-duration: 0.3s;
+}
+
+div.input > input[type="submit"], div.input > input[type="reset"]{
+    background-color: blueviolet;
+    border-radius: 10px;
+    border: 2px solid rgb(195, 143, 243);
+    color: white;
+    padding: 10px;
+    margin-right: 10px;
+}

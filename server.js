@@ -53,4 +53,28 @@ app.get('/', (req, res) => {
   res.render('homepage');
 });
 
+app.get('/ideias', (req, res) => {
+  res.render('pag_ideias');
+});
+
+app.get('/roteiros', (req, res) => {
+  res.render('pag_roteiros');
+});
+
+app.get('/downloads', (req, res) => {
+  res.render('pag_downloads');
+});
+
+app.get('/sobre', (req, res) => {
+  res.render('pag_sobre');
+});
+
+app.get('/form_ideia', (req, res) => {
+  res.render('pag_form_ideia');
+});
+
+app.get('/form_roteiro', (req, res) => {
+  res.render('pag_form_roteiro');
+});
+
 module.exports = app;

@@ -1,0 +1,26 @@
+<div class="card mt-4">
+        <div class="card-body">
+            <h1>Nova Ideia</h1>
+            <p>Nenhuma ideia ainda? Comece salvando qualquer inspiração. Pode ser uma frase, um tema ou só um título.</p>
+            <hr>
+            <form action="" method="post" autocomplete="on">
+                    <div class="input">
+                        <label for="inome">Nome da ideia: </label>
+                        <input type="text" name="nome" id="inome" required placeholder="Minha Ideia..." min="2">
+                    </div>
+                    <div class="input">
+                        <label for="idescricao">Descrição da ideia: </label>
+                        <br>
+                        <textarea name="descricao" id="idescricao" cols="100" rows="10" placeholder="Descrição da sua ideia..." style="resize: none;" required min="5"></textarea>
+                    </div>
+                    <div class="input">
+                        <label for="itag">Tags: </label>
+                        <input type="text" name="tag" id="itag" required min="5" placeholder="Palavras-chave separadas por vírgula (ex: tutorial, humor, vlog)...">
+                    </div>
+                    <div class="input">
+                        <input type="submit" value="Enviar">
+                        <input type="reset" value="Limpar">
+                    </div>
+            </form>
+        </div>
+</div>

@@ -1,0 +1,39 @@
+<div class="card mt-4">
+        <div class="card-body">
+            <h1>Novo Roteiro</h1>
+            <p>Nenhum roteiro ainda? Comece transformando uma ideia em roteiro.</p>
+            <hr>
+            <form action="" method="post">
+                <div class="input">
+                    <label for="ititulo">Título do Vídeo: </label>
+                    <input type="text" name="titulo" id="ititulo" required placeholder="Nome do vídeo/roteiro...">
+                </div>
+                <div class="input">
+                    <label for="idescricao">Descrição/Resumo: </label>
+                    <br>
+                    <textarea name="descricao" id="idescricao" cols="50" rows="5" placeholder="Breve explicação sobre o vídeo..." style="resize: none;" required min="5"></textarea>
+                </div>
+                <hr>
+                <h2>Estrutura do Roteiro</h2>
+                <p>Dividida em Introdução, Desenvolvimento e Conclusão</p>
+                <div class="input">
+                    <label for="iintroducao">Introdução: </label>
+                    <textarea name="introducao" id="iintroducao" cols="100" rows="5" placeholder="Como começa o vídeo?" style="resize: none;" required min="5"></textarea>
+                </div>
+                <hr>
+                <div class="input">
+                    <label for="idesenvolvimento">Desenvolvimento: </label>
+                    <textarea name="descricao" id="idescricao" cols="100" rows="20" placeholder="O que você quer ensinar, mostrar ou fazer nesse vídeo?" style="resize: none;" required min="5"></textarea>
+                </div>
+                <hr>
+                <div class="input">
+                    <label for="iconclusao">Conclusão: </label>
+                    <textarea name="conclusao" id="iconclusao" cols="100" rows="5" placeholder="Frase de despedida, convite para o próximo vídeo, agradecimento, etc." style="resize: none;" required min="5"></textarea>
+                </div>
+                <div class="input">
+                    <input type="submit" value="Enviar">
+                    <input type="reset" value="Limpar">
+                </div>
+            </form>
+        </div>
+</div>
