@@ -77,4 +77,8 @@ app.get('/form_roteiro', (req, res) => {
   res.render('pag_form_roteiro');
 });
 
+app.get('/form_download', (req, res) => {
+  res.render('pag_form_download');
+});
+
 module.exports = app;
