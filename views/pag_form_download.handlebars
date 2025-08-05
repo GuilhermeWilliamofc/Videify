@@ -2,10 +2,10 @@
         <div class="card-body">
             <h1>Baixar Vídeo/Imagem</h1>
             <hr>
-            <form action="" method="post" autocomplete="off">
+            <form action="/baixar" method="post" autocomplete="off">
                 <div class="input">
                     <label for="itipolink">Tipo de Link: </label>
-                    <select name="tipolink" id="itipolink">
+                    <select name="tipo" id="itipolink" required>
                         <option value="" selected>--- Escolha ---</option>
                         <optgroup label="Tipos de Link">
                             <option value="yt">Vídeo Youtube</option>
@@ -18,9 +18,41 @@
                     <input type="text" name="link" id="ilink" required placeholder="Cole seu link aqui...">
                 </div>
                 <div class="input">
-                    <input type="submit" value="Enviar">
+                    <input py-click="baixar" class="submit" type="submit" value="Enviar">
                     <input type="reset" value="Limpar">
                 </div>
+                <p id="textoteste"></p>
             </form>
         </div>
 </div>
+
+<py-script>
+from js import document, fetch, JSON, Object
+
+async def baixar(event=None):
+    tipo = document.getElementById("itipolink").value
+    link = document.getElementById("ilink").value
+
+    if not tipo or not link:
+        print("Preencha os campos corretamente.")
+        return
+
+    body = { "tipo": tipo, "link": link }
+
+    headers = Object.fromEntries([["Content-Type", "application/json"]])
+
+    response = await fetch(
+        "/baixar",
+        {
+            "method": "POST",
+            "headers": headers,
+            "body": JSON.stringify(body)
+        }
+    )
+
+    if response.ok:
+        print("Download iniciado!")
+    else:
+        print("Erro ao iniciar download.")
+
+</py-script>

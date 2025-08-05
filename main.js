@@ -9,7 +9,8 @@ function createWindow() {
     height: 800,
     icon: path.join(__dirname, 'public', '/images/favicon.ico'), // Caminho para seu ícone
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
+      sandbox: false,
       contextIsolation: false
     }
   });

@@ -36,14 +36,14 @@ button.botao{
     border-radius: 10px;
 }
 
-button.botao:hover, div.input > input[type="submit"]:hover, div.input > input[type="reset"]:hover{
+button.botao:hover, div.input > input[type="submit"]:hover, div.input > input[type="reset"]:hover, div.input > input.submit:hover{
     background-color: white;
     color: blueviolet;
     border: 2px solid blueviolet;
     transition-duration: 0.3s;
 }
 
-button.botao:active, div.input > input[type="submit"]:active, div.input > input[type="reset"]:active{
+button.botao:active, div.input > input[type="submit"]:active, div.input > input[type="reset"]:active, div.input > input.submit:active{
     background-color: rgb(168, 132, 202);
     color: white;
 }
@@ -113,7 +113,7 @@ div.input > input[type="text"]:focus-within::placeholder{
     transition-duration: 0.3s;
 }
 
-div.input > input[type="submit"], div.input > input[type="reset"]{
+div.input > input[type="submit"], div.input > input[type="reset"], div.input > input.submit{
     background-color: blueviolet;
     border-radius: 10px;
     border: 2px solid rgb(195, 143, 243);

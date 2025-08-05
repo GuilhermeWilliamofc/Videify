@@ -3,7 +3,7 @@
             <h1>Novo Roteiro</h1>
             <p>Nenhum roteiro ainda? Comece transformando uma ideia em roteiro.</p>
             <hr>
-            <form action="" method="post">
+            <form>
                 <div class="input">
                     <label for="ititulo">Título do Vídeo: </label>
                     <input type="text" name="titulo" id="ititulo" required placeholder="Nome do vídeo/roteiro...">
@@ -31,9 +31,11 @@
                     <textarea name="conclusao" id="iconclusao" cols="100" rows="5" placeholder="Frase de despedida, convite para o próximo vídeo, agradecimento, etc." style="resize: none;" required min="5"></textarea>
                 </div>
                 <div class="input">
-                    <input type="submit" value="Enviar">
+                    <input py-click="testepickle" class="submit" type="button" value="Enviar">
                     <input type="reset" value="Limpar">
                 </div>
             </form>
         </div>
 </div>
+
+<py-script src="python/testepickle.py"></py-script>

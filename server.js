@@ -81,4 +81,50 @@ app.get('/form_download', (req, res) => {
   res.render('pag_form_download');
 });
 
+const { execFile } = require("child_process");
+
+app.post("/baixar", (req, res) => {
+  const { tipo, link } = req.body;
+
+  console.log("📩 Requisição recebida:", tipo, link);
+
+  if (!tipo || !link) return res.status(400).send("Dados inválidos");
+
+  if (tipo === "yt") {
+    const scriptPath = path.join(__dirnamePath, "scripts", "baixar_youtube.py");
+
+    execFile("python", [scriptPath, link], (err, stdout, stderr) => {
+      if (err) {
+        console.error("❌ Erro ao executar script:", err);
+        return res.status(500).send("Erro");
+      }
+      console.log("✅ Script executado:", stdout);
+      return res.status(200).send("Vídeo baixado com sucesso");
+    });
+  } 
+  
+  else if (tipo === "img") {
+    const dest = path.join(__dirnamePath, "public", "downloads", "imagem.jpg");
+
+    fetch(link)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.arrayBuffer();
+      })
+      .then(buf => {
+        fs.writeFileSync(dest, Buffer.from(buf));
+        console.log("✅ Imagem salva em:", dest);
+        res.status(200).send("Imagem baixada com sucesso");
+      })
+      .catch(err => {
+        console.error("❌ Erro ao baixar imagem:", err.message);
+        res.status(500).send("Erro ao baixar imagem");
+      });
+  } 
+  
+  else {
+    res.status(400).send("Tipo inválido");
+  }
+});
+
 module.exports = app;
