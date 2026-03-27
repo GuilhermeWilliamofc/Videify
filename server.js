@@ -272,11 +272,16 @@ app.post("/baixar-stream", (req, res) => {
   if (tipo === "yt") {
     const scriptPath = path.join(__dirnamePath, "scripts", "baixar_youtube.py");
     // Tenta 'python', 'python3' e 'py' para compatibilidade com diferentes instalações do Windows
+    // shell: true é necessário para que o Electron encontre o Python no PATH do sistema
+    // mesmo quando iniciado por clique duplo (sem terminal)
     const pythonCmds = ["python", "python3", "py"];
     let pyProcess = null;
     for (const cmd of pythonCmds) {
       try {
-        pyProcess = spawn(cmd, [scriptPath, link, formatChoice], { env: { ...process.env, PYTHONUNBUFFERED: "1" } });
+        pyProcess = spawn(cmd, [scriptPath, link, formatChoice], {
+          shell: true,
+          env: { ...process.env, PYTHONUNBUFFERED: "1" }
+        });
         // Testa se o processo iniciou com sucesso
         if (pyProcess && pyProcess.pid) break;
       } catch (e) {
@@ -284,7 +289,7 @@ app.post("/baixar-stream", (req, res) => {
       }
     }
     if (!pyProcess || !pyProcess.pid) {
-      res.write("data: ERROR:Python não encontrado. Instale Python e adicione ao PATH.\\n\\n");
+      res.write("data: ERROR:Python não encontrado. Instale Python e adicione ao PATH.\n\n");
       return res.end();
     }
 
@@ -321,6 +326,10 @@ app.post("/baixar-stream", (req, res) => {
             date: new Date().toISOString()
         });
         writeDB(downloadsFile, downloads);
+      } else if (code === 9009) {
+        res.write(`data: ERROR:Python não encontrado (código 9009). Instale o Python e marque a opção 'Add Python to PATH' durante a instalação.\n\n`);
+      } else if (code === 1) {
+        res.write(`data: ERROR:Erro no script Python. Verifique se o pacote 'pytubefix' está instalado: pip install pytubefix\n\n`);
       } else if (code !== 0) {
         res.write(`data: ERROR:Processo terminou com erro (código ${code})\n\n`);
       }
