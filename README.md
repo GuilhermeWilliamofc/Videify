@@ -55,15 +55,26 @@
 - **Automação de Downloads:** Python
 - **Armazenamento:** Arquivos JSON Locais (Offline First) integrado à File System do computador.
 
+### 📥 Download & Instalação
+
+Se você não é um desenvolvedor, pode simplesmente baixar a versão compilada (**Windows .exe**) na seção de [Releases](https://github.com/GuilhermeWilliamofc/Videify/releases).
+
+> [!IMPORTANT]
+> **Antes de abrir o Videify.exe**, certifique-se de executar o arquivo `instalar_dependencias.bat` que vem junto no download.
+> - Ele instalará automaticamente as bibliotecas de Python necessárias para os downloads funcionarem.
+> - Se você não tiver Python, o script fornecerá o link oficial para download.
+
 ### 🚀 Como Executar Localmente
 
-1. Certifique-se de ter o [Node.js](https://nodejs.org/) e o [Python](https://www.python.org/) instalados na sua máquina.
+1. Certifique-se de ter o [Node.js](https://nodejs.org/) instalado na sua máquina.
 2. Clone este repositório.
-3. Instale as dependências executando no terminal:
+3. **Dependências do Python:** Se você não tem o Python ou a biblioteca `pytubefix` instalada, execute o arquivo `instalar_dependencias.bat`.
+   - Este script verifica se o Python está no seu sistema (orientando o download caso falte) e instala o `pytubefix` automaticamente.
+4. Instale as dependências do projeto executando no terminal:
    ```bash
    npm install
    ```
-4. Inicie o aplicativo:
+5. Inicie o aplicativo:
    ```bash
    npm start
    ```
@@ -111,15 +122,26 @@
 - **Download Engineering:** Python
 - **Storage Data layer:** Local JSON Files (Offline First) mapped to your native File System.
 
+### 📥 Download & Installation
+
+If you are not a developer, you can simply download the compiled version (**Windows .exe**) from the [Releases](https://github.com/GuilhermeWilliamofc/Videify/releases) section.
+
+> [!IMPORTANT]
+> **Before opening Videify.exe**, make sure to run the `instalar_dependencias.bat` file included in the download.
+> - It will automatically install the necessary Python libraries for downloads to work.
+> - If you don't have Python, the script will provide the official download link.
+
 ### 🚀 How to Run Locally
 
-1. Ensure you have both [Node.js](https://nodejs.org/) and [Python](https://www.python.org/) installed.
+1. Ensure you have [Node.js](https://nodejs.org/) installed.
 2. Clone this repository to your environment.
-3. Install the dependencies by running this in your terminal:
+3. **Python Dependencies:** If you don't have Python or the `pytubefix` library installed, run the `instalar_dependencias.bat` file.
+   - This script checks for Python (providing download instructions if missing) and automatically installs `pytubefix`.
+4. Install the project dependencies by running this in your terminal:
    ```bash
    npm install
    ```
-4. Start the application via:
+5. Start the application via:
    ```bash
    npm start
    ```
