@@ -1,7 +1,32 @@
-<div class="card mt-4">
+<div class="card mt-4 mb-4">
         <div class="card-body">
             <h1 class="mb-3">Minhas Ideias &#x1F4A1;</h1>
             <p class="lead mb-4">Anote aquela inspiração rápida antes que ela fuja.</p>
             <a href="/form_ideia" class="link"><button class="botao">+ Nova Ideia</button></a>
         </div>
 </div>
+
+{{#if ideias}}
+<div class="row">
+    {{#each ideias}}
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{nome}}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{tag}}</h6>
+                <p class="card-text">{{descricao}}</p>
+                <hr>
+                <div class="d-flex justify-content-between mt-2">
+                    <a href="/editar_ideia/{{id}}" class="btn btn-sm btn-primary">Editar</a>
+                    <form action="/deletar_ideia/{{id}}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta ideia?');">Excluir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+</div>
+{{else}}
+<p class="text-muted text-center pt-4">Nenhuma ideia encontrada. Adicione uma nova!</p>
+{{/if}}

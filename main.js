@@ -26,6 +26,11 @@ function createWindow() {
   });
 }
 
+app.on('browser-window-created', (e, win) => {
+  win.setMenuBarVisibility(false);
+  win.setMenu(null);
+});
+
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {

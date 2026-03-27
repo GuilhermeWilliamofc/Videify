@@ -1,7 +1,116 @@
 # Videify
-<div style="text-align: center;">
-  <img src="public/images/VideifyLogo.png" height="180em" />
-</div>
+<img src="public/images/VideifyLogo.png" height="180em" style="display: block; margin: 0 auto;"/>
+
+[🇧🇷 Português](#-português) | [🇺🇸 English](#-english)
+
+---
+
+## 🇧🇷 Português
+
+**Videify** é um aplicativo desktop projetado para criadores de conteúdo organizarem suas ideias, planejarem roteiros de vídeos completos e baixarem mídias facilmente. Tudo funciona offline, salvando os dados de forma rápida e segura localmente no seu computador.
+
+### ✨ Principais Funcionalidades
+
+- **Minhas Ideias:** Um espaço para anotar rapidamente inspirações de vídeos, organizando por nome, descrição longo e tags de pesquisa.
+- **Meus Roteiros:** Um organizador detalhado de roteiros dividido por Introdução, Desenvolvimento e Conclusão. Inclui adição de miniatura (thumbnail) via upload de imagem local, status de produção (Conceito, Em Produção, Concluído) e cálculo automático do tempo de leitura do roteiro.
+- **Meus Downloads:** Baixe vídeos (nos formatos originais) e áudios (MP3 / Opus) diretamente do YouTube pelo app de forma local e organizada sem depender de sites externos lotados de anúncios.
+
+### 📸 Telas do Aplicativo
+
+> <img src="public/images/imagem1.png" style="display: block; margin: 0 auto;"/>
+
 <br>
-<p>It's a personal organizer designed for video creators. With it, you can plan scripts, save ideas, download reference images and videos, and keep everything in one place. Perfect for anyone who creates content for social media. </p>
-<p>It was built using Node.js, Bootstrap, Handlebars, and Express.</p>
+
+> <img src="public/images/imagem6.png" style="display: block; margin: 0 auto;"/>
+
+<br>
+
+> <img src="public/images/imagem2.png" style="display: block; margin: 0 auto;"/>
+
+<br>
+
+> <img src="public/images/imagem3.png" style="display: block; margin: 0 auto;"/>
+
+<br>
+
+> <img src="public/images/imagem4.png" style="display: block; margin: 0 auto;"/>
+
+<br>
+
+> <img src="public/images/imagem5.png" style="display: block; margin: 0 auto;"/>
+
+### 🛠️ Tecnologias Utilizadas
+
+- **Frontend e Backend:** Node.js, Express, Handlebars, Vanilla CSS
+- **Framework Desktop:** Electron
+- **Automação de Downloads:** Python
+- **Armazenamento:** Arquivos JSON Locais (Offline First) integrado à File System do computador.
+
+### 🚀 Como Executar Localmente
+
+1. Certifique-se de ter o [Node.js](https://nodejs.org/) e o [Python](https://www.python.org/) instalados na sua máquina.
+2. Clone este repositório.
+3. Instale as dependências executando no terminal:
+   ```bash
+   npm install
+   ```
+4. Inicie o aplicativo:
+   ```bash
+   npm start
+   ```
+
+---
+
+## 🇺🇸 English
+
+**Videify** is an all-in-one desktop application designed for content creators to organize their ideas, plan complete video scripts, and download media seamlessly. It's built to work entirely offline, saving data securely and quickly to your local machine.
+
+### ✨ Key Features
+
+- **My Ideas:** A dedicated space to quickly jot down video inspirations, organized by title, long descriptions, and tags.
+- **My Scripts (Roteiros):** A detailed video script planner segmented into Introduction, Development, and Conclusion. It features local thumbnail image uploads, active production status tracking (Concept, In Production, Completed), and an automated script reading-time calculator.
+- **My Downloads:** Locally fetch and download YouTube videos (in original formats) or audio (MP3 / Opus) neatly through the app – without relying on ad-heavy third-party websites.
+
+### 📸 App Screenshots
+
+> <img src="public/images/imagem1.png" style="display: block; margin: 0 auto;"/>
+
+<br>
+
+> <img src="public/images/imagem6.png" style="display: block; margin: 0 auto;"/>
+
+<br>
+
+> <img src="public/images/imagem2.png" style="display: block; margin: 0 auto;"/>
+
+<br>
+
+> <img src="public/images/imagem3.png" style="display: block; margin: 0 auto;"/>
+
+<br>
+
+> <img src="public/images/imagem4.png" style="display: block; margin: 0 auto;"/>
+
+<br>
+
+> <img src="public/images/imagem5.png" style="display: block; margin: 0 auto;"/>
+
+### 🛠️ Technologies Built With
+
+- **Frontend & Backend:** Node.js, Express, Handlebars, Vanilla CSS
+- **Desktop Framework:** Electron
+- **Download Engineering:** Python
+- **Storage Data layer:** Local JSON Files (Offline First) mapped to your native File System.
+
+### 🚀 How to Run Locally
+
+1. Ensure you have both [Node.js](https://nodejs.org/) and [Python](https://www.python.org/) installed.
+2. Clone this repository to your environment.
+3. Install the dependencies by running this in your terminal:
+   ```bash
+   npm install
+   ```
+4. Start the application via:
+   ```bash
+   npm start
+   ```

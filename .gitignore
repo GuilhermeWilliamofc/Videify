@@ -1,0 +1,8 @@
+node_modules/
+.venv/
+data/*.json
+Downloads/
+downloads/
+scripts/ffmpeg.exe
+*.log
+.DS_Store

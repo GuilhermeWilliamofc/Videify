@@ -1,7 +1,84 @@
-<div class="card mt-4">
+<div class="card mt-4 mb-4">
         <div class="card-body">
             <h1 class="mb-3">Meus Roteiros &#x1F4DD;</h1>
             <p class="lead mb-4">Dê forma à sua ideia com uma estrutura completa de roteiro. Perfeito para planejar vídeos com começo, meio e fim.</p>
             <a href="/form_roteiro" class="link"><button class="botao">+ Novo Roteiro</button></a>
         </div>
 </div>
+
+{{#if roteiros}}
+<div class="row">
+    {{#each roteiros}}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100" style="
+            border: 1px solid 
+                {{#if (eq estado 'conceito')}}#4a1520{{/if}}
+                {{#if (eq estado 'producao')}}#8a6800{{/if}}
+                {{#if (eq estado 'concluido')}}#1c4a32{{/if}}
+                {{#unless estado}}#4a1520{{/unless}}
+            ; 
+            background-color: 
+                {{#if (eq estado 'conceito')}}#2b0f14{{/if}}
+                {{#if (eq estado 'producao')}}#332701{{/if}}
+                {{#if (eq estado 'concluido')}}#0e291e{{/if}}
+                {{#unless estado}}#2b0f14{{/unless}}
+            ; 
+            color: #e0e0e0;
+            overflow: hidden;
+            border-radius: 8px;
+        ">
+            
+            {{#if thumbnail}}
+                <img src="{{thumbnail}}" class="card-img-top" alt="Thumbnail do Vídeo" style="width: 100%; height: 220px; object-fit: cover; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            {{/if}}
+
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title text-white" style="font-weight: bold; font-size: 1.25rem;">{{titulo}}</h5>
+                    <span class="badge" style="
+                        font-size: 0.75rem; 
+                        background-color: 
+                            {{#if (eq estado 'conceito')}}#dc3545{{/if}}
+                            {{#if (eq estado 'producao')}}#ffc107{{/if}}
+                            {{#if (eq estado 'concluido')}}#198754{{/if}}
+                            {{#unless estado}}#dc3545{{/unless}}
+                        ;
+                        color: 
+                            {{#if (eq estado 'producao')}}#000{{else}}#fff{{/if}}
+                        ;
+                        border-radius: 4px;
+                        padding: 6px 10px;
+                    ">
+                        {{#if (eq estado 'conceito')}}Conceito / Inicial{{/if}}
+                        {{#if (eq estado 'producao')}}Em Produção{{/if}}
+                        {{#if (eq estado 'concluido')}}Concluído / Postado{{/if}}
+                        {{#unless estado}}Conceito / Inicial{{/unless}}
+                    </span>
+                </div>
+                
+                {{#if tempo_leitura}}
+                <div class="mb-2">
+                    <span style="font-size: 0.85rem; color: #adb5bd;">Leitura: ⏳ <strong>{{tempo_leitura}} min</strong></span>
+                </div>
+                {{/if}}
+
+                <p class="card-text mb-3"><strong>Resumo:</strong> <span style="opacity: 0.9;">{{descricao}}</span></p>
+                <hr style="border-top: 1px solid rgba(255,255,255,0.15);">
+                <p class="card-text small mb-2"><strong style="color: #fff;">Introdução:</strong> <br><span style="opacity: 0.85;">{{introducao}}</span></p>
+                <p class="card-text small mb-2"><strong style="color: #fff;">Desenvolvimento:</strong> <br><span style="opacity: 0.85;">{{desenvolvimento}}</span></p>
+                <p class="card-text small mb-4"><strong style="color: #fff;">Conclusão:</strong> <br><span style="opacity: 0.85;">{{conclusao}}</span></p>
+                
+                <div class="d-flex justify-content-between mt-auto">
+                    <a href="/editar_roteiro/{{id}}" class="btn btn-sm" style="background-color: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.1); width: 48%;">✎ Editar</a>
+                    <form action="/deletar_roteiro/{{id}}" method="POST" style="display:inline; width: 48%;">
+                        <button type="submit" class="btn btn-sm" style="background-color: rgba(220,53,69,0.2); border: 1px solid #dc3545; color: #ff8e99; width: 100%;" onclick="return confirm('Tem certeza que deseja excluir este roteiro?');">✕ Excluir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+</div>
+{{else}}
+<p class="text-muted text-center pt-4">Nenhum roteiro encontrado. Adicione um novo!</p>
+{{/if}}

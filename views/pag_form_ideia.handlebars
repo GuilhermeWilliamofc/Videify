@@ -3,23 +3,24 @@
             <h1>Nova Ideia</h1>
             <p>Nenhuma ideia ainda? Comece salvando qualquer inspiração. Pode ser uma frase, um tema ou só um título.</p>
             <hr>
-            <form action="" method="post" autocomplete="on">
+            <form action="{{#if isEdit}}/editar_ideia/{{ideia.id}}{{else}}/nova_ideia{{/if}}" method="post" autocomplete="on">
                     <div class="input">
                         <label for="inome">Nome da ideia: </label>
-                        <input type="text" name="nome" id="inome" required placeholder="Minha Ideia..." min="2">
+                        <input type="text" name="nome" id="inome" required placeholder="Minha Ideia..." minlength="2" value="{{#if isEdit}}{{ideia.nome}}{{/if}}">
                     </div>
                     <div class="input">
                         <label for="idescricao">Descrição da ideia: </label>
                         <br>
-                        <textarea name="descricao" id="idescricao" cols="100" rows="10" placeholder="Descrição da sua ideia..." style="resize: none;" required min="5"></textarea>
+                        <textarea name="descricao" id="idescricao" cols="100" rows="10" placeholder="Descrição da sua ideia..." style="resize: none;">{{#if isEdit}}{{ideia.descricao}}{{/if}}</textarea>
                     </div>
                     <div class="input">
                         <label for="itag">Tags: </label>
-                        <input type="text" name="tag" id="itag" required min="5" placeholder="Palavras-chave separadas por vírgula (ex: tutorial, humor, vlog)...">
+                        <input type="text" name="tag" id="itag" placeholder="Palavras-chave separadas por vírgula (ex: tutorial, humor, vlog)..." value="{{#if isEdit}}{{ideia.tag}}{{/if}}">
                     </div>
                     <div class="input">
                         <input type="submit" value="Enviar">
                         <input type="reset" value="Limpar">
+                        <a href="/ideias" style="margin-left: auto; text-decoration: none;"><input type="button" value="Cancelar" style="background-color: transparent; color: #ff8e99; border: 2px solid #dc3545; padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ff8e99';"></a>
                     </div>
             </form>
         </div>

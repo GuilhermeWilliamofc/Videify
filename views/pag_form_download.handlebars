@@ -2,10 +2,10 @@
         <div class="card-body">
             <h1>Baixar Vídeo/Imagem</h1>
             <hr>
-            <form action="/baixar" method="post" autocomplete="off">
+            <form id="downloadForm" autocomplete="off">
                 <div class="input">
                     <label for="itipolink">Tipo de Link: </label>
-                    <select name="tipo" id="itipolink" required>
+                    <select name="tipo" id="itipolink" required onchange="toggleFormato()">
                         <option value="" selected>--- Escolha ---</option>
                         <optgroup label="Tipos de Link">
                             <option value="yt">Vídeo Youtube</option>
@@ -13,46 +13,143 @@
                         </optgroup>
                     </select>
                 </div>
+                <div class="input" id="formatoContainer" style="display: none;">
+                    <label for="iformato">Formato (Youtube): </label>
+                    <select name="formato" id="iformato">
+                        <option value="video" selected>Vídeo Completo (MP4)</option>
+                        <option value="mp3">Somente Áudio (MP3)</option>
+                        <option value="opus">Somente Áudio (OPUS)</option>
+                    </select>
+                </div>
                 <div class="input">
                     <label for="ilink">Link: </label>
                     <input type="text" name="link" id="ilink" required placeholder="Cole seu link aqui...">
                 </div>
                 <div class="input">
-                    <input py-click="baixar" class="submit" type="submit" value="Enviar">
-                    <input type="reset" value="Limpar">
+                    <button class="submit" type="submit" id="btnDownload" style="cursor: pointer; padding: 10px 15px; border: none; background-color: #2b78e4; color: white; border-radius: 4px; font-weight: bold;">Baixar</button>
+                    <button type="reset" id="btnReset" style="cursor: pointer; padding: 10px 15px; border: none; background-color: #f1f1f1; color: black; border-radius: 4px; border: 1px solid #ccc;">Limpar</button>
                 </div>
-                <p id="textoteste"></p>
             </form>
+
+            <div id="progressContainer" style="display: none; margin-top: 20px;">
+                <p id="statusMsg" style="font-weight: bold; margin-bottom: 5px;">Iniciando download...</p>
+                <div style="background-color: #e0e0e0; border-radius: 5px; width: 100%; height: 25px; overflow: hidden;">
+                    <div id="progressBar" style="background-color: #4caf50; width: 0%; height: 100%; transition: width 0.3s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; color: white; font-size: 13px; font-weight: bold;"></div>
+                </div>
+            </div>
+            <div id="resultContainer" style="margin-top: 15px;"></div>
+
+            <script>
+            function toggleFormato() {
+                const tipo = document.getElementById('itipolink').value;
+                const container = document.getElementById('formatoContainer');
+                if (tipo === 'yt') {
+                    container.style.display = 'block';
+                } else {
+                    container.style.display = 'none';
+                    if (document.getElementById('iformato')) {
+                        document.getElementById('iformato').value = 'video';
+                    }
+                }
+            }
+
+            document.getElementById('downloadForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const tipo = document.getElementById('itipolink').value;
+                const link = document.getElementById('ilink').value;
+                const formato = document.getElementById('iformato') ? document.getElementById('iformato').value : "video";
+                const btnDownload = document.getElementById('btnDownload');
+                const progressContainer = document.getElementById('progressContainer');
+                const progressBar = document.getElementById('progressBar');
+                const statusMsg = document.getElementById('statusMsg');
+                const resultContainer = document.getElementById('resultContainer');
+
+                // Basic validation
+                const isYoutube = link.includes('youtube.com') || link.includes('youtu.be');
+                if (tipo === 'img' && isYoutube) {
+                    alert("Você selecionou 'Imagem', mas inseriu um link do YouTube. Por favor, modifique o tipo ou o link.");
+                    return;
+                }
+                if (tipo === 'yt' && !isYoutube) {
+                    alert("Você selecionou 'Vídeo Youtube', mas o link não parece ser do YouTube.");
+                    return;
+                }
+
+                btnDownload.disabled = true;
+                btnDownload.style.opacity = '0.5';
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressBar.innerText = '0%';
+                progressBar.style.backgroundColor = '#4caf50';
+                statusMsg.innerText = 'Buscando informações...';
+                resultContainer.innerHTML = '';
+
+                try {
+                    const response = await fetch('/baixar-stream', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tipo, link, formato })
+                    });
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let done = false;
+                    let remainingChunk = "";
+
+                    while (!done) {
+                        const { value, done: readerDone } = await reader.read();
+                        done = readerDone;
+                        if (value) {
+                            const chunk = decoder.decode(value, {stream: true});
+                            const allData = remainingChunk + chunk;
+                            const lines = allData.split('\n');
+                            
+                            remainingChunk = lines.pop();
+                            
+                            for (let line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    const data = line.substring(6).trim();
+                                    if (data.startsWith('TITLE:')) {
+                                        const title = data.substring(6);
+                                        statusMsg.innerText = tipo === 'yt' 
+                                            ? `Baixando o vídeo "${title}"`
+                                            : `Baixando a foto "${title}"`;
+                                    } else if (data.startsWith('STATUS:')) {
+                                        const status = data.substring(7);
+                                        if(!statusMsg.innerText.includes('Baixando o vídeo') && !statusMsg.innerText.includes('Baixando a foto')) {
+                                            statusMsg.innerText = status;
+                                        }
+                                    } else if (data.startsWith('PROGRESS:')) {
+                                        const percent = parseFloat(data.substring(9)).toFixed(1);
+                                        progressBar.style.width = percent + '%';
+                                        progressBar.innerText = percent + '%';
+                                    } else if (data.startsWith('DONE:')) {
+                                        const path = data.substring(5);
+                                        resultContainer.innerHTML = `<div style="padding: 15px; margin-top: 10px; border-radius: 4px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;"><strong>Concluído!</strong><br>Salvo em:<br><code style="background: transparent; color: inherit; padding: 0;">${path}</code></div>`;
+                                        progressBar.style.width = '100%';
+                                        progressBar.innerText = '100%';
+                                        statusMsg.innerText = 'Download finalizado!';
+                                    } else if (data.startsWith('ERROR:')) {
+                                        const err = data.substring(6);
+                                        resultContainer.innerHTML = `<div style="padding: 15px; margin-top: 10px; border-radius: 4px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;"><strong>Erro:</strong> ${err}</div>`;
+                                        statusMsg.innerText = 'Ocorreu um erro.';
+                                        progressBar.style.backgroundColor = '#f44336';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    resultContainer.innerHTML = `<div style="padding: 15px; margin-top: 10px; border-radius: 4px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;"><strong>Erro na requisição:</strong> ${err.message}</div>`;
+                    statusMsg.innerText = 'Ocorreu um erro de conexão.';
+                    progressBar.style.backgroundColor = '#f44336';
+                } finally {
+                    btnDownload.disabled = false;
+                    btnDownload.style.opacity = '1';
+                }
+            });
+            </script>
         </div>
 </div>
-
-<py-script>
-from js import document, fetch, JSON, Object
-
-async def baixar(event=None):
-    tipo = document.getElementById("itipolink").value
-    link = document.getElementById("ilink").value
-
-    if not tipo or not link:
-        print("Preencha os campos corretamente.")
-        return
-
-    body = { "tipo": tipo, "link": link }
-
-    headers = Object.fromEntries([["Content-Type", "application/json"]])
-
-    response = await fetch(
-        "/baixar",
-        {
-            "method": "POST",
-            "headers": headers,
-            "body": JSON.stringify(body)
-        }
-    )
-
-    if response.ok:
-        print("Download iniciado!")
-    else:
-        print("Erro ao iniciar download.")
-
-</py-script>
+
