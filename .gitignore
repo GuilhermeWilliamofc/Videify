@@ -6,3 +6,4 @@ downloads/
 scripts/ffmpeg.exe
 *.log
 .DS_Store
+release-builds/

@@ -1,6 +1,14 @@
 # Videify
 <img src="public/images/VideifyLogo.png" height="180em" style="display: block; margin: 0 auto;"/>
 
+<div align="center">
+
+[![Latest Version](https://img.shields.io/github/v/release/GuilhermeWilliamofc/Videify?include_prereleases&color=brightgreen)](https://github.com/GuilhermeWilliamofc/Videify/releases)
+[![Total Downloads](https://img.shields.io/github/downloads/GuilhermeWilliamofc/Videify/total?color=brightgreen)](https://github.com/GuilhermeWilliamofc/Videify/releases)
+[![GitHub License](https://img.shields.io/github/license/GuilhermeWilliamofc/Videify?color=brightgreen)](https://github.com/GuilhermeWilliamofc/Videify/blob/main/LICENSE)
+
+</div>
+
 [🇧🇷 Português](#-português) | [🇺🇸 English](#-english)
 
 ---
