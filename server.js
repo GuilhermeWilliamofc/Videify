@@ -271,7 +271,22 @@ app.post("/baixar-stream", (req, res) => {
 
   if (tipo === "yt") {
     const scriptPath = path.join(__dirnamePath, "scripts", "baixar_youtube.py");
-    const pyProcess = spawn("python", [scriptPath, link, formatChoice], { env: { ...process.env, PYTHONUNBUFFERED: "1" } });
+    // Tenta 'python', 'python3' e 'py' para compatibilidade com diferentes instalações do Windows
+    const pythonCmds = ["python", "python3", "py"];
+    let pyProcess = null;
+    for (const cmd of pythonCmds) {
+      try {
+        pyProcess = spawn(cmd, [scriptPath, link, formatChoice], { env: { ...process.env, PYTHONUNBUFFERED: "1" } });
+        // Testa se o processo iniciou com sucesso
+        if (pyProcess && pyProcess.pid) break;
+      } catch (e) {
+        pyProcess = null;
+      }
+    }
+    if (!pyProcess || !pyProcess.pid) {
+      res.write("data: ERROR:Python não encontrado. Instale Python e adicione ao PATH.\\n\\n");
+      return res.end();
+    }
 
     let currentTitle = "";
     let currentThumb = "";

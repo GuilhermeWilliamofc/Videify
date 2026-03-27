@@ -1,7 +1,9 @@
 import sys
 import os
 import re
+import unicodedata
 import pytubefix
+from pytubefix import YouTube
 import subprocess
 import urllib.request
 
@@ -15,11 +17,22 @@ def on_progress(stream, chunk, bytes_remaining):
         percentage = (bytes_downloaded / total_size) * 100
         print(f"PROGRESS:{percentage:.2f}", flush=True)
 
+def sanitizar_nome(nome):
+    # Normaliza unicode e remove emojis/caracteres de controle
+    nome = unicodedata.normalize('NFKC', nome)
+    # Remove caracteres inválidos no Windows e emojis (fora do BMP)
+    nome = re.sub(r'[<>:"/\\|?*\x00-\x1f]', '_', nome)
+    # Remove caracteres fora do plano básico (emojis, símbolos especiais)
+    nome = re.sub(r'[^\u0000-\uFFFF]', '_', nome)
+    # Colapsa múltiplos underscores
+    nome = re.sub(r'_+', '_', nome)
+    return nome.strip('_ ')
+
 def criarpastavideo(url):
-    video = pytubefix.YouTube(url, on_progress_callback=on_progress)
+    video = YouTube(url, on_progress_callback=on_progress)
     title = video.title
     print(f"TITLE:{title}", flush=True)
-    pasta_nome = re.sub(r'[<>:"/\\|?*]', '_', f'Video - {title}')
+    pasta_nome = sanitizar_nome(f'Video - {title}')
     pasta_download = os.path.join('Downloads', pasta_nome)
     os.makedirs(pasta_download, exist_ok=True)
     
@@ -69,7 +82,7 @@ def converter_audio(audio_path, output_path, ffmpeg_path, formato):
 
 def baixar(video, title, pasta, ffmpeg_path, formato):
     print("STATUS:Buscando melhor qualidade...", flush=True)
-    title_safe = re.sub(r'[<>:"/\\|?*]', '_', title)
+    title_safe = sanitizar_nome(title)
     final_output = ""
 
     if formato == "video":
