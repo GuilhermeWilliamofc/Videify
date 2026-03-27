@@ -18,15 +18,32 @@ def on_progress(stream, chunk, bytes_remaining):
         print(f"PROGRESS:{percentage:.2f}", flush=True)
 
 def sanitizar_nome(nome):
-    # Normaliza unicode e remove emojis/caracteres de controle
+    # Normaliza unicode (ex: converte caracteres compostos)
     nome = unicodedata.normalize('NFKC', nome)
-    # Remove caracteres inválidos no Windows e emojis (fora do BMP)
-    nome = re.sub(r'[<>:"/\\|?*\x00-\x1f]', '_', nome)
-    # Remove caracteres fora do plano básico (emojis, símbolos especiais)
-    nome = re.sub(r'[^\u0000-\uFFFF]', '_', nome)
-    # Colapsa múltiplos underscores
+
+    # Whitelist de caracteres permitidos no nome do arquivo:
+    # - Letras (incluindo acentuadas): \w cobre [a-zA-Z0-9_] + unicode letters
+    # - Dígitos: 0-9
+    # - Espaço
+    # - Parênteses: ( )
+    # - Colchetes: [ ]
+    # - Hífen literal: -
+    # - Apóstrofo / aspas simples: '
+    # - Ponto: .
+    # - Vírgula: ,
+    # - Exclamação: !
+    # - Interrogação: ?
+    # - Arroba: @
+    # - E comercial: &
+    # - Underscore: _
+    # Tudo fora da lista (inclui –, —, ", ", •, emojis, etc.) é removido.
+    nome = re.sub(r"[^\w\s()\[\]\-'.!?,@&]", '', nome, flags=re.UNICODE)
+
+    # Colapsa espaços/underscores múltiplos
+    nome = re.sub(r' +', ' ', nome)
     nome = re.sub(r'_+', '_', nome)
-    return nome.strip('_ ')
+
+    return nome.strip(' _')
 
 def criarpastavideo(url):
     video = YouTube(url, on_progress_callback=on_progress)
