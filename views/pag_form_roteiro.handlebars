@@ -1,61 +1,60 @@
 <div class="card mt-4">
         <div class="card-body">
-            <h1>Novo Roteiro</h1>
-            <p>Nenhum roteiro ainda? Comece transformando uma ideia em roteiro.</p>
+            <h1 data-i18n="script-title">Novo Roteiro</h1>
+            <p data-i18n="script-subtitle">Nenhum roteiro ainda? Comece transformando uma ideia em roteiro.</p>
             <hr>
             <form action="{{#if isEdit}}/editar_roteiro/{{roteiro.id}}{{else}}/novo_roteiro{{/if}}" method="post" enctype="multipart/form-data" autocomplete="on">
                 <div class="input">
-                    <label for="ititulo">Título do Vídeo: </label>
-                    <input type="text" name="titulo" id="ititulo" required placeholder="Nome do vídeo/roteiro..." value="{{#if isEdit}}{{roteiro.titulo}}{{/if}}">
+                    <label for="ititulo" data-i18n="script-label-title2">Título do Vídeo: </label>
+                    <input type="text" name="titulo" id="ititulo" required data-i18n-ph="script-ph-title2" placeholder="Nome do vídeo/roteiro..." value="{{#if isEdit}}{{roteiro.titulo}}{{/if}}">
                 </div>
                 <div class="input" style="margin-top: 15px;">
-                    <label for="iestado" style="font-weight: bold;">Fase de Produção: </label>
+                    <label for="iestado" style="font-weight: bold;" data-i18n="script-label-stage">Fase de Produção: </label>
                     <br>
                     <select name="estado" id="iestado" required style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; max-width: 300px;">
-                        <option value="conceito" {{#if (eq roteiro.estado 'conceito')}}selected{{/if}}>🔴 Conceito / Inicial</option>
-                        <option value="producao" {{#if (eq roteiro.estado 'producao')}}selected{{/if}}>🟡 Em Produção</option>
-                        <option value="concluido" {{#if (eq roteiro.estado 'concluido')}}selected{{/if}}>🟢 Concluído / Postado</option>
+                        <option value="conceito" {{#if (eq roteiro.estado 'conceito')}}selected{{/if}} data-i18n="script-opt-concept">🔴 Conceito / Inicial</option>
+                        <option value="producao" {{#if (eq roteiro.estado 'producao')}}selected{{/if}} data-i18n="script-opt-prod">🟡 Em Produção</option>
+                        <option value="concluido" {{#if (eq roteiro.estado 'concluido')}}selected{{/if}} data-i18n="script-opt-done">🟢 Concluído / Postado</option>
                     </select>
                 </div>
                 <div class="input" style="margin-top: 15px; margin-bottom: 20px; flex-direction: column; align-items: flex-start;">
                     <div style="margin-bottom: 10px;">
-                        <label style="font-weight: bold;">Thumbnail do Vídeo (Opcional): </label>
-                        <small>Envie um arquivo do seu computador.</small>
+                        <label style="font-weight: bold;" data-i18n="script-label-thumb">Thumbnail do Vídeo (Opcional): </label>
+                        <small data-i18n="script-small-thumb">Envie um arquivo do seu computador.</small>
                     </div>
                     
                     <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
                         <div style="display: flex; gap: 10px; align-items: center;">
-                            <label for="ithumbnail_file" style="min-width: 60px;">Arquivo: </label>
+                            <label for="ithumbnail_file" style="min-width: 60px;" data-i18n="script-label-file">Arquivo: </label>
                             <input type="file" name="thumbnail_file" id="ithumbnail_file" accept="image/*">
                         </div>
                     </div>
                 </div>
                 <div class="input">
-                    <label for="idescricao">Descrição/Resumo: </label>
+                    <label for="idescricao" data-i18n="script-label-desc">Descrição/Resumo: </label>
                     <br>
-                    <textarea name="descricao" id="idescricao" cols="50" rows="5" placeholder="Breve explicação sobre o vídeo..." style="resize: none;">{{#if isEdit}}{{roteiro.descricao}}{{/if}}</textarea>
+                    <textarea name="descricao" id="idescricao" cols="50" rows="5" data-i18n-ph="script-ph-desc" placeholder="Breve explicação sobre o vídeo..." style="resize: none;">{{#if isEdit}}{{roteiro.descricao}}{{/if}}</textarea>
                 </div>
                 <hr>
-                <h2>Estrutura do Roteiro</h2>
-                <p>Dividida em Introdução, Desenvolvimento e Conclusão</p>
+                <h2 data-i18n="script-h2-struct">Estrutura do Roteiro</h2>
+                <p data-i18n="script-p-struct">Dividida em Introdução, Desenvolvimento e Conclusão</p>
                 <div class="input">
-                    <label for="iintroducao">Introdução: </label>
-                    <textarea name="introducao" id="iintroducao" cols="100" rows="5" placeholder="Como começa o vídeo?" style="resize: none;">{{#if isEdit}}{{roteiro.introducao}}{{/if}}</textarea>
-                </div>
-                <hr>
-                <div class="input">
-                    <label for="idesenvolvimento">Desenvolvimento: </label>
-                    <textarea name="desenvolvimento" id="idesenvolvimento" cols="100" rows="20" placeholder="O que você quer ensinar, mostrar ou fazer nesse vídeo?" style="resize: none;">{{#if isEdit}}{{roteiro.desenvolvimento}}{{/if}}</textarea>
+                    <label for="iintroducao" data-i18n="script-label-intro">Introdução: </label>
+                    <textarea name="introducao" id="iintroducao" cols="100" rows="5" data-i18n-ph="script-ph-intro" placeholder="Como começa o vídeo?" style="resize: none;">{{#if isEdit}}{{roteiro.introducao}}{{/if}}</textarea>
                 </div>
                 <hr>
                 <div class="input">
-                    <label for="iconclusao">Conclusão: </label>
-                    <textarea name="conclusao" id="iconclusao" cols="100" rows="5" placeholder="Frase de despedida, convite para o próximo vídeo, agradecimento, etc." style="resize: none;">{{#if isEdit}}{{roteiro.conclusao}}{{/if}}</textarea>
+                    <label for="idesenvolvimento" data-i18n="script-label-dev">Desenvolvimento: </label>
+                    <textarea name="desenvolvimento" id="idesenvolvimento" cols="100" rows="20" data-i18n-ph="script-ph-dev" placeholder="O que você quer ensinar, mostrar ou fazer nesse vídeo?" style="resize: none;">{{#if isEdit}}{{roteiro.desenvolvimento}}{{/if}}</textarea>
+                </div>
+                <hr>
+                <div class="input">
+                    <label for="iconclusao" data-i18n="script-label-concl">Conclusão: </label>
+                    <textarea name="conclusao" id="iconclusao" cols="100" rows="5" data-i18n-ph="script-ph-concl" placeholder="Frase de despedida, convite para o próximo vídeo, agradecimento, etc." style="resize: none;">{{#if isEdit}}{{roteiro.conclusao}}{{/if}}</textarea>
                 </div>
                 <div class="input">
-                    <input class="submit" type="submit" value="Enviar">
-                    <input type="reset" value="Limpar">
-                    <a href="/roteiros" style="margin-left: auto; text-decoration: none;"><input type="button" value="Cancelar" style="background-color: transparent; color: #ff8e99; border: 2px solid #dc3545; padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ff8e99';"></a>
+                    <input class="submit" type="submit" data-i18n-val="script-btn-submit" value="Enviar">
+                    <a href="/roteiros" style="margin-left: auto; text-decoration: none;"><input type="button" data-i18n-val="script-btn-cancel" value="Cancelar" style="background-color: transparent; color: #ff8e99; border: 2px solid #dc3545; padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ff8e99';"></a>
                 </div>
             </form>
         </div>

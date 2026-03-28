@@ -1,123 +1,290 @@
-body{
-    background-color: #761fff73;
+/* ================================================================
+   Videify — Main Stylesheet
+   Light theme (default) + Dark theme via [data-theme="dark"]
+   ================================================================ */
+
+/* ---- CSS Variables (Light) ------------------------------------ */
+:root {
+  --bg-body:       #761fff73;
+  --bg-card:       #ffffff;
+  --bg-card2:      #f8f2ff;
+  --text-main:     #1a0033;
+  --text-muted:    #6c757d;
+  --border-color:  rgb(154, 46, 255);
+  --input-bg:      rgb(181, 142, 218);
+  --input-focus:   #ffffff;
+  --btn-primary:   blueviolet;
+  --btn-primary-border: rgb(195, 143, 243);
+  --btn-hover-bg:  #ffffff;
+  --btn-hover-text: blueviolet;
+  --nav-bg:        #7500A3;
+  --nav-hover:     #461399;
+  --cancel-color:  #ff8e99;
+  --cancel-border: #dc3545;
+  --cancel-hover:  #dc3545;
+  --select-bg:     #ffffff;
+  --select-border: #ccc;
+  --progress-bg:   #e0e0e0;
 }
 
-div#fundobranco{
-    background-color: white; 
-    padding: 15px 15px; 
-    border-radius: 10px;
+/* ---- CSS Variables (Dark) ------------------------------------- */
+[data-theme="dark"] {
+  --bg-body:       #1a0033;
+  --bg-card:       #2a1045;
+  --bg-card2:      #1f0838;
+  --text-main:     #e8d5ff;
+  --text-muted:    #a07bcc;
+  --border-color:  #9b59d9;
+  --input-bg:      #3d1a6e;
+  --input-focus:   #2a1050;
+  --btn-primary:   #8a2be2;
+  --btn-primary-border: #b88af0;
+  --btn-hover-bg:  #3d1a6e;
+  --btn-hover-text: #f0d0ff;
+  --nav-bg:        #3d0066;
+  --nav-hover:     #220044;
+  --cancel-color:  #ff8e99;
+  --cancel-border: #dc3545;
+  --cancel-hover:  #dc3545;
+  --select-bg:     #3d1a6e;
+  --select-border: #9b59d9;
+  --progress-bg:   #3d1a6e;
 }
 
-img.logo{
-    width: 40px;
+/* ---- Base ----------------------------------------------------- */
+html {
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
-img.logo2{
-    width: 20px;
+body {
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
-li.nav-item{
-    box-sizing: border-box;
-    margin-right: 10px;
+/* ---- Card ----------------------------------------------------- */
+div#fundobranco {
+  background-color: var(--bg-card);
+  padding: 15px 15px;
+  border-radius: 10px;
+  color: var(--text-main);
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
-li.nav-item:hover{
-    background-color: #461399;
-    outline: 2px solid white;
-    border-radius: 10px;
-    transition-duration: 0.3s;
+/* ---- Logo ----------------------------------------------------- */
+img.logo  { width: 40px; }
+img.logo2 { width: 20px; }
+
+/* ---- Navbar --------------------------------------------------- */
+nav.navbar {
+  background-color: var(--nav-bg) !important;
+  transition: background-color 0.35s ease;
 }
 
-button.botao{
-    background-color: blueviolet;
-    color: white;
-    border: 2px solid white;
-    padding: 10px;
-    border-radius: 10px;
+li.nav-item {
+  box-sizing: border-box;
+  margin-right: 10px;
 }
 
-button.botao:hover, div.input > input[type="submit"]:hover, div.input > input[type="reset"]:hover, div.input > input.submit:hover{
-    background-color: white;
-    color: blueviolet;
-    border: 2px solid blueviolet;
-    transition-duration: 0.3s;
+li.nav-item:hover {
+  background-color: var(--nav-hover);
+  outline: 2px solid white;
+  border-radius: 10px;
+  transition-duration: 0.3s;
 }
 
-button.botao:active, div.input > input[type="submit"]:active, div.input > input[type="reset"]:active, div.input > input.submit:active{
-    background-color: rgb(168, 132, 202);
-    color: white;
+/* ---- Navbar util buttons (theme / lang) ----------------------- */
+#vfy-theme-btn,
+#vfy-lang-btn {
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.55);
+  color: #fff;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s, transform 0.15s;
+  margin-left: 6px;
+  line-height: 1.6;
 }
 
-a.link{
-    text-decoration: none;
+#vfy-theme-btn:hover,
+#vfy-lang-btn:hover {
+  background: rgba(255,255,255,0.18);
+  border-color: #fff;
+  transform: scale(1.06);
 }
 
-label{
-    margin-right: 5px;
+#vfy-theme-btn:active,
+#vfy-lang-btn:active {
+  transform: scale(0.97);
 }
 
-input{
-    box-sizing: border-box;
-    border: 2px solid rgb(154, 46, 255);
-    border-radius: 10px;
-    padding: 6px;
-    transition-duration: 0.3s;
+/* ---- Generic button ------------------------------------------ */
+button.botao {
+  background-color: var(--btn-primary);
+  color: white;
+  border: 2px solid white;
+  padding: 10px;
+  border-radius: 10px;
 }
 
-input::placeholder{
-    color: white;
+button.botao:hover,
+div.input > input[type="submit"]:hover,
+div.input > input.submit:hover {
+  background-color: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
+  border: 2px solid var(--btn-primary);
+  transition-duration: 0.3s;
 }
 
-textarea{
-    background-color: rgb(181, 142, 218);
-    box-sizing: border-box;
-    border: 2px solid rgb(154, 46, 255);
-    border-radius: 10px;
-    padding: 6px;
-    transition-duration: 0.3s;
+button.botao:active,
+div.input > input[type="submit"]:active,
+div.input > input.submit:active {
+  background-color: rgb(168, 132, 202);
+  color: white;
 }
 
-textarea:focus-within{
-    background-color: white;
-    color: black;
-    transition-duration: 0.3s;
+/* ---- Links ---------------------------------------------------- */
+a.link { text-decoration: none; }
+
+/* ---- Labels --------------------------------------------------- */
+label {
+  margin-right: 5px;
+  color: var(--text-main);
 }
 
-textarea:focus-within::placeholder{
-    color: black;
-    transition-duration: 0.3s;
+/* ---- Inputs --------------------------------------------------- */
+input {
+  box-sizing: border-box;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  padding: 6px;
+  transition-duration: 0.3s;
+  color: var(--text-main);
 }
 
-textarea::placeholder{
-    color: white;
+input::placeholder {
+  color: rgba(255,255,255,0.75);
 }
 
-div.input{
-    display: flex;
-    margin-bottom: 10px;
+/* ---- Textareas ----------------------------------------------- */
+textarea {
+  background-color: var(--input-bg);
+  box-sizing: border-box;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  padding: 6px;
+  transition-duration: 0.3s;
+  color: var(--text-main);
 }
 
-div.input > input[type="text"]{
-    background-color: rgb(181, 142, 218);
-    width: 500px;
+textarea:focus-within {
+  background-color: var(--input-focus);
+  color: var(--text-main);
+  transition-duration: 0.3s;
 }
 
-div.input > input[type="text"]:focus-within{
-    background-color: white;
-    color: black;
-    transition-duration: 0.3s;
+textarea::placeholder { color: rgba(255,255,255,0.75); }
+textarea:focus-within::placeholder {
+  color: var(--text-muted);
+  transition-duration: 0.3s;
 }
 
-div.input > input[type="text"]:focus-within::placeholder{
-    color: black;
-    transition-duration: 0.3s;
+/* ---- Form input group ---------------------------------------- */
+div.input {
+  display: flex;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
 
-div.input > input[type="submit"], div.input > input[type="reset"], div.input > input.submit{
-    background-color: blueviolet;
-    border-radius: 10px;
-    border: 2px solid rgb(195, 143, 243);
-    color: white;
-    padding: 10px;
-    margin-right: 10px;
+div.input > input[type="text"] {
+  background-color: var(--input-bg);
+  color: var(--text-main);
+  width: 500px;
+}
+
+div.input > input[type="text"]:focus-within {
+  background-color: var(--input-focus);
+  color: var(--text-main);
+  transition-duration: 0.3s;
+}
+
+div.input > input[type="text"]:focus-within::placeholder {
+  color: var(--text-muted);
+  transition-duration: 0.3s;
+}
+
+div.input > input[type="submit"],
+div.input > input.submit {
+  background-color: var(--btn-primary);
+  border-radius: 10px;
+  border: 2px solid var(--btn-primary-border);
+  color: white;
+  padding: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+/* ---- Selects ------------------------------------------------- */
+select {
+  background-color: var(--select-bg);
+  color: var(--text-main);
+  border: 1px solid var(--select-border);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* ---- Download form specifics --------------------------------- */
+#progressContainer div[style*="background-color: #e0e0e0"] {
+  background-color: var(--progress-bg) !important;
+}
+
+/* ---- Cards (Bootstrap) dark adaptation ----------------------- */
+[data-theme="dark"] .card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .card-body {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] p,
+[data-theme="dark"] .text-muted {
+  color: var(--text-main) !important;
+}
+
+[data-theme="dark"] hr {
+  border-color: var(--border-color);
+  opacity: 0.4;
+}
+
+/* ---- UI Refinements ------------------------------------------ */
+.vfy-preview-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.vfy-expand-btn {
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.vfy-expand-btn:hover {
+  transform: translateY(-2px);
+  background-color: rgba(255,255,255,0.2) !important;
+}
+
+.vfy-expand-btn:active {
+  transform: translateY(0);
 }

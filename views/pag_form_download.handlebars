@@ -1,33 +1,34 @@
 <div class="card mt-4">
         <div class="card-body">
-            <h1>Baixar Vídeo/Imagem</h1>
+            <h1 data-i18n="dl-title">Baixar Vídeo/Imagem</h1>
             <hr>
             <form id="downloadForm" autocomplete="off">
                 <div class="input">
-                    <label for="itipolink">Tipo de Link: </label>
+                    <label for="itipolink" data-i18n="dl-label-type">Tipo de Link: </label>
                     <select name="tipo" id="itipolink" required onchange="toggleFormato()">
-                        <option value="" selected>--- Escolha ---</option>
+                        <option value="" selected data-i18n="dl-opt-choose">--- Escolha ---</option>
                         <optgroup label="Tipos de Link">
-                            <option value="yt">Vídeo Youtube</option>
-                            <option value="img">Imagem</option>
+                            <option value="yt" data-i18n="dl-opt-yt">Vídeo Youtube</option>
+                            <option value="img" data-i18n="dl-opt-img">Imagem</option>
                         </optgroup>
                     </select>
                 </div>
                 <div class="input" id="formatoContainer" style="display: none;">
-                    <label for="iformato">Formato (Youtube): </label>
+                    <label for="iformato" data-i18n="dl-label-fmt">Formato (Youtube): </label>
                     <select name="formato" id="iformato">
-                        <option value="video" selected>Vídeo Completo (MP4)</option>
-                        <option value="mp3">Somente Áudio (MP3)</option>
-                        <option value="opus">Somente Áudio (OPUS)</option>
+                        <option value="video" selected data-i18n="dl-opt-video">Vídeo Completo (MP4)</option>
+                        <option value="mp3" data-i18n="dl-opt-mp3">Somente Áudio (MP3)</option>
+                        <option value="opus" data-i18n="dl-opt-opus">Somente Áudio (OPUS)</option>
                     </select>
                 </div>
                 <div class="input">
-                    <label for="ilink">Link: </label>
-                    <input type="text" name="link" id="ilink" required placeholder="Cole seu link aqui...">
+                    <label for="ilink" data-i18n="dl-label-link">Link: </label>
+                    <input type="text" name="link" id="ilink" required data-i18n-ph="dl-ph-link" placeholder="Cole seu link aqui...">
                 </div>
                 <div class="input">
-                    <button class="submit" type="submit" id="btnDownload" style="cursor: pointer; padding: 10px 15px; border: none; background-color: #2b78e4; color: white; border-radius: 4px; font-weight: bold;">Baixar</button>
-                    <button type="reset" id="btnReset" style="cursor: pointer; padding: 10px 15px; border: none; background-color: #f1f1f1; color: black; border-radius: 4px; border: 1px solid #ccc;">Limpar</button>
+                    <button class="submit" type="submit" id="btnDownload" data-i18n="dl-btn-download" style="cursor: pointer; padding: 10px 15px; border: none; background-color: #2b78e4; color: white; border-radius: 4px; font-weight: bold;">Baixar</button>
+                    <button type="reset" id="btnReset" data-i18n="dl-btn-clear" style="cursor: pointer; padding: 10px 15px; border: none; background-color: #f1f1f1; color: black; border-radius: 4px; border: 1px solid #ccc;">Limpar</button>
+                    <a href="/downloads" style="margin-left: auto; text-decoration: none;"><button type="button" id="btnCancel" data-i18n="dl-btn-cancel" style="background-color: transparent; color: #ff8e99; border: 2px solid #dc3545; padding: 10px 15px; border-radius: 10px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ff8e99';">Cancelar</button></a>
                 </div>
             </form>
 

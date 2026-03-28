@@ -1,8 +1,8 @@
 <div class="card mt-4 mb-4">
         <div class="card-body">
-            <h1 class="mb-3">Minhas Ideias &#x1F4A1;</h1>
-            <p class="lead mb-4">Anote aquela inspiração rápida antes que ela fuja.</p>
-            <a href="/form_ideia" class="link"><button class="botao">+ Nova Ideia</button></a>
+            <h1 class="mb-3" data-i18n="page-ideas-title">Minhas Ideias &#x1F4A1;</h1>
+            <p class="lead mb-4" data-i18n="page-ideas-subtitle">Anote aquela inspiração rápida antes que ela fuja.</p>
+            <a href="/form_ideia" class="link"><button class="botao" data-i18n="page-ideas-btn">+ Nova Ideia</button></a>
         </div>
 </div>
 
@@ -17,9 +17,9 @@
                 <p class="card-text">{{descricao}}</p>
                 <hr>
                 <div class="d-flex justify-content-between mt-2">
-                    <a href="/editar_ideia/{{id}}" class="btn btn-sm btn-primary">Editar</a>
+                    <a href="/editar_ideia/{{id}}" class="btn btn-sm btn-primary" data-i18n="card-btn-edit">Editar</a>
                     <form action="/deletar_ideia/{{id}}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta ideia?');">Excluir</button>
+                        <button type="submit" class="btn btn-sm btn-danger" data-i18n="card-btn-delete" onclick="return confirm(window.VFY_CONFIRM_DELETE || 'Tem certeza que deseja excluir esta ideia?');">Excluir</button>
                     </form>
                 </div>
             </div>
@@ -28,5 +28,5 @@
     {{/each}}
 </div>
 {{else}}
-<p class="text-muted text-center pt-4">Nenhuma ideia encontrada. Adicione uma nova!</p>
+<p class="text-muted text-center pt-4" data-i18n="page-ideas-empty">Nenhuma ideia encontrada. Adicione uma nova!</p>
 {{/if}}

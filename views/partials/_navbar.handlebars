@@ -1,37 +1,42 @@
-<nav class="navbar navbar-expand-lg" style="background-color: #7500A3;" data-bs-theme="dark">
+<nav class="navbar navbar-expand-lg" style="background-color: var(--nav-bg, #7500A3);" data-bs-theme="dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#"><img class="logo" src="/images/VideifyLogo.png" alt=""></a>
+    <a class="navbar-brand" href="#"><img class="logo" src="/images/VideifyLogo.png" alt="Videify"></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active d-flex align-items-center" aria-current="page" href="/">
-            <span class="material-icons" class="icone" style="margin-right: 5px; font-size: 1em;">home</span>Início
+          <a class="nav-link active d-flex align-items-center" aria-current="page" href="/" id="vfy-nav-home">
+            <span class="material-icons" style="margin-right: 5px; font-size: 1em;">home</span>Início
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="/ideias">
-            <span class="material-icons" class="icone" style="margin-right: 5px; font-size: 1em;">lightbulb</span>Ideias
+          <a class="nav-link active d-flex align-items-center" href="/ideias" id="vfy-nav-ideas">
+            <span class="material-icons" style="margin-right: 5px; font-size: 1em;">lightbulb</span>Ideias
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="/roteiros">
-            <span class="material-icons" class="icone" style="margin-right: 5px; font-size: 1em;">auto_stories</span>Roteiros
+          <a class="nav-link active d-flex align-items-center" href="/roteiros" id="vfy-nav-scripts">
+            <span class="material-icons" style="margin-right: 5px; font-size: 1em;">auto_stories</span>Roteiros
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="/downloads">
-            <span class="material-icons" class="icone" style="margin-right: 5px; font-size: 1em;">download</span>Downloads
+          <a class="nav-link active d-flex align-items-center" href="/downloads" id="vfy-nav-downloads">
+            <span class="material-icons" style="margin-right: 5px; font-size: 1em;">download</span>Downloads
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="/sobre">
-            <span class="material-icons" class="icone" style="margin-right: 5px; font-size: 1em;">info</span>Sobre
+          <a class="nav-link active d-flex align-items-center" href="/sobre" id="vfy-nav-about">
+            <span class="material-icons" style="margin-right: 5px; font-size: 1em;">info</span>Sobre
           </a>
         </li>
       </ul>
+      <!-- Right-side controls -->
+      <div class="d-flex align-items-center gap-2">
+        <button id="vfy-lang-btn"  onclick="toggleLang()"  title="Mudar idioma / Change language">🌐 EN</button>
+        <button id="vfy-theme-btn" onclick="toggleTheme()" title="Modo escuro / Dark mode">🌙</button>
+      </div>
     </div>
   </div>
 </nav>
