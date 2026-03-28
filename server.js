@@ -276,20 +276,37 @@ app.post("/baixar-stream", (req, res) => {
     // mesmo quando iniciado por clique duplo (sem terminal)
     const pythonCmds = ["python", "python3", "py"];
     let pyProcess = null;
+    let foundCmd = null;
+
+    // Tenta encontrar qual comando do Python funciona no sistema
     for (const cmd of pythonCmds) {
       try {
-        pyProcess = spawn(cmd, [scriptPath, link, formatChoice], {
-          shell: true,
-          env: { ...process.env, PYTHONUNBUFFERED: "1" }
-        });
-        // Testa se o processo iniciou com sucesso
-        if (pyProcess && pyProcess.pid) break;
+        const { spawnSync } = require('child_process');
+        // Usamos shell: true para garantir que comandos como 'py' sejam encontrados no Windows
+        const check = spawnSync(cmd, ['--version'], { shell: true });
+        if (check.status === 0) {
+          foundCmd = cmd;
+          break;
+        }
       } catch (e) {
-        pyProcess = null;
+        // Continua para o próximo comando
       }
     }
+
+    if (!foundCmd) {
+      res.write("data: ERROR:Python não encontrado. Instale o Python (https://www.python.org/) e ATENÇÃO: Marque a caixa 'Add Python to PATH' na instalação.\n\n");
+      return res.end();
+    }
+
+    // Usamos aspas extras em volta dos caminhos para evitar erros com espaços no Windows
+    // O shell: true do spawn pode ter problemas com caminhos com espaços se não forem escapados
+    pyProcess = spawn(foundCmd, [`"${scriptPath}"`, `"${link}"`, formatChoice], {
+      shell: true,
+      env: { ...process.env, PYTHONUNBUFFERED: "1" }
+    });
+
     if (!pyProcess || !pyProcess.pid) {
-      res.write("data: ERROR:Python não encontrado. Instale Python e adicione ao PATH.\n\n");
+      res.write("data: ERROR:Não foi possível iniciar o processo Python.\n\n");
       return res.end();
     }
 
@@ -311,7 +328,12 @@ app.post("/baixar-stream", (req, res) => {
     });
 
     pyProcess.stderr.on("data", (data) => {
-      console.error("Python Erro:", data.toString());
+      const output = data.toString();
+      console.error("Python Erro:", output);
+      // Se houver erro de arquivo não encontrado vindo diretamente do Python (antes do nosso try/except interno)
+      if (output.includes("can't open file") && output.includes("Errno 2")) {
+          res.write(`data: ERROR:O Python não conseguiu localizar o script de download. Verifique se o caminho da pasta não contém caracteres especiais ou se a pasta 'scripts' existe.\n\n`);
+      }
     });
 
     pyProcess.on("close", (code) => {
@@ -327,7 +349,9 @@ app.post("/baixar-stream", (req, res) => {
         });
         writeDB(downloadsFile, downloads);
       } else if (code === 9009) {
-        res.write(`data: ERROR:Python não encontrado (código 9009). Instale o Python e marque a opção 'Add Python to PATH' durante a instalação.\n\n`);
+        res.write(`data: ERROR:Python não encontrado (código 9009). Você precisa instalar o Python e OBRIGATORIAMENTE marcar 'Add Python to PATH' na instalação.\n\n`);
+      } else if (code === 2) {
+        res.write(`data: ERROR:Erro de acesso ao arquivo (código 2). Isso geralmente acontece quando o caminho da pasta tem espaços ou caracteres especiais. Tente mover o Videify para uma pasta mais simples, como C:\\Videify\n\n`);
       } else if (code === 1) {
         res.write(`data: ERROR:Erro no script Python. Verifique se o pacote 'pytubefix' está instalado: pip install pytubefix\n\n`);
       } else if (code !== 0) {

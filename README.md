@@ -61,8 +61,8 @@ Se você não é um desenvolvedor, pode simplesmente baixar a versão compilada 
 
 > [!IMPORTANT]
 > **Antes de abrir o Videify.exe**, certifique-se de executar o arquivo `instalar_dependencias.bat` que vem junto no download.
-> - Ele instalará automaticamente as bibliotecas de Python necessárias para os downloads funcionarem.
-> - Se você não tiver Python, o script fornecerá o link oficial para download.
+> - Ele instalará as bibliotecas de Python necessárias para os downloads funcionarem.
+> - **IMPORTANTE:** Ao instalar o Python, você **PRECISA** marcar a caixa **"Add Python to PATH"** na instalação para que o app funcione.
 
 ### 🚀 Como Executar Localmente
 
@@ -128,8 +128,8 @@ If you are not a developer, you can simply download the compiled version (**Wind
 
 > [!IMPORTANT]
 > **Before opening Videify.exe**, make sure to run the `instalar_dependencias.bat` file included in the download.
-> - It will automatically install the necessary Python libraries for downloads to work.
-> - If you don't have Python, the script will provide the official download link.
+> - It will install the necessary Python libraries for downloads to work.
+> - **IMPORTANT:** When installing Python, you **MUST** check the **"Add Python to PATH"** box during installation, otherwise the app will not work.
 
 ### 🚀 How to Run Locally
 

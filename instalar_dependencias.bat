@@ -14,7 +14,7 @@ if %errorlevel% neq 0 (
         echo Por favor, instale o Python:
         echo   1. Acesse: https://www.python.org/downloads/
         echo   2. Baixe e instale o Python
-        echo   3. IMPORTANTE: marque a opcao "Add Python to PATH" durante a instalacao!
+        echo   3. IMPORTANTE: Marque a opcao "Add Python to PATH" na primeira tela do instalador!
         echo   4. Reinicie o computador apos a instalacao
         echo   5. Execute este script novamente
         echo.
