@@ -200,6 +200,7 @@ const FORM_TRANSLATIONS = {
     'btn-view-video':       'Vídeo Completo',
     'btn-view-mp3':         'Arquivo .MP3',
     'btn-view-opus':        'Arquivo .OPUS',
+    'btn-open-folder':      '📂 Abrir Local',
 
     // about page
     'about-title':          'Sobre',
@@ -317,6 +318,7 @@ const FORM_TRANSLATIONS = {
     'btn-view-video':       'Complete Video',
     'btn-view-mp3':         'File .MP3',
     'btn-view-opus':        'File .OPUS',
+    'btn-open-folder':      '📂 Open Folder',
 
     // about page
     'about-title':          'About',
@@ -386,3 +388,20 @@ window.vfyTogglePreview = function(btn) {
         btn.innerHTML = '▼ <span>' + expandLabel + '</span>';
     }
 }
+
+window.openFolder = function(filePath) {
+    if (!filePath) return;
+    fetch('/open-folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: filePath })
+    })
+    .then(res => {
+        if (!res.ok) alert('Não foi possível localizar o arquivo no computador.');
+    })
+    .catch(err => {
+        console.error('Erro ao abrir pasta:', err);
+        alert('Erro ao tentar abrir a pasta.');
+    });
+};
+

@@ -6,6 +6,7 @@ const fs = require('fs');
 const session = require('express-session');
 const flash = require('connect-flash');
 const multer = require('multer');
+const { shell } = require('electron');
 
 const app = express();
 const __dirnamePath = path.resolve();
@@ -251,6 +252,26 @@ app.get('/form_roteiro', (req, res) => {
 
 app.get('/form_download', (req, res) => {
   res.render('pag_form_download');
+});
+
+app.post('/open-folder', (req, res) => {
+    const { path: filePath } = req.body;
+    console.log("📂 Solicitação para abrir pasta:", filePath);
+    
+    if (!filePath) return res.status(400).send("Caminho não fornecido");
+    
+    const relativePath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+    const fullPath = path.resolve(path.join(__dirnamePath, relativePath));
+    
+    console.log("📁 Caminho completo resolvido:", fullPath);
+    
+    if (fs.existsSync(fullPath)) {
+      shell.showItemInFolder(fullPath);
+      res.status(200).send("OK");
+    } else {
+      console.error("❌ Arquivo não encontrado:", fullPath);
+      res.status(404).send("Arquivo não encontrado");
+    }
 });
 
 const { execFile, spawn } = require("child_process");
