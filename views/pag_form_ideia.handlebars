@@ -8,14 +8,19 @@
                         <label for="inome" data-i18n="idea-label-name">Nome da ideia: </label>
                         <input type="text" name="nome" id="inome" required data-i18n-ph="idea-ph-name" placeholder="Minha Ideia..." minlength="2" value="{{#if isEdit}}{{ideia.nome}}{{/if}}">
                     </div>
-                    <div class="input">
+                    <div class="input" style="flex-direction: column; align-items: flex-start;">
                         <label for="idescricao" data-i18n="idea-label-desc">Descrição da ideia: </label>
-                        <br>
-                        <textarea name="descricao" id="idescricao" cols="100" rows="10" data-i18n-ph="idea-ph-desc" placeholder="Descrição da sua ideia..." style="resize: none;">{{#if isEdit}}{{ideia.descricao}}{{/if}}</textarea>
+                        <div class="vfy-copy-container" style="width: 100%;">
+                            <textarea name="descricao" id="idescricao" cols="100" rows="10" data-i18n-ph="idea-ph-desc" placeholder="Descrição da sua ideia..." style="resize: none; width: 100%;">{{#if isEdit}}{{ideia.descricao}}{{/if}}</textarea>
+                            <button type="button" class="vfy-copy-btn" onclick="vfyCopyText('idescricao')" data-i18n-title="btn-copy" title="Copiar"><span class="material-icons">content_copy</span></button>
+                        </div>
                     </div>
                     <div class="input">
                         <label for="itag" data-i18n="idea-label-tag">Tags: </label>
-                        <input type="text" name="tag" id="itag" data-i18n-ph="idea-ph-tag" placeholder="Palavras-chave separadas por vírgula (ex: tutorial, humor, vlog)..." value="{{#if isEdit}}{{ideia.tag}}{{/if}}">
+                        <div class="vfy-copy-container">
+                            <input type="text" name="tag" id="itag" data-i18n-ph="idea-ph-tag" placeholder="Palavras-chave separadas por vírgula (ex: tutorial, humor, vlog)..." value="{{#if isEdit}}{{ideia.tag}}{{/if}}">
+                            <button type="button" class="vfy-copy-btn" onclick="vfyCopyText('itag')" data-i18n-title="btn-copy" title="Copiar"><span class="material-icons">content_copy</span></button>
+                        </div>
                     </div>
                     <div class="input">
                         <input type="submit" data-i18n-val="idea-btn-submit" value="Enviar">

@@ -157,6 +157,7 @@ label {
 
 /* ---- Inputs --------------------------------------------------- */
 input {
+  background-color: var(--input-bg);
   box-sizing: border-box;
   border: 2px solid var(--border-color);
   border-radius: 10px;
@@ -287,4 +288,62 @@ select {
 
 .vfy-expand-btn:active {
   transform: translateY(0);
+}
+
+/* ---- Copy Button ---------------------------------------------- */
+.vfy-copy-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+}
+
+.vfy-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--text-main);
+  border-radius: 8px;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+  opacity: 0.6;
+}
+
+.vfy-copy-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.vfy-copy-btn .material-icons {
+  font-size: 18px;
+}
+
+.vfy-copy-success {
+  background-color: #28a745 !important;
+  color: white !important;
+  border-color: #218838 !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] .vfy-copy-btn {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Adjustments for labels when using direct buttons */
+.vfy-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 5px;
 }

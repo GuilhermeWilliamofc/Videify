@@ -30,27 +30,38 @@
                         </div>
                     </div>
                 </div>
-                <div class="input">
+                <div class="input" style="flex-direction: column; align-items: flex-start;">
                     <label for="idescricao" data-i18n="script-label-desc">Descrição/Resumo: </label>
-                    <br>
-                    <textarea name="descricao" id="idescricao" cols="50" rows="5" data-i18n-ph="script-ph-desc" placeholder="Breve explicação sobre o vídeo..." style="resize: none;">{{#if isEdit}}{{roteiro.descricao}}{{/if}}</textarea>
+                    <div class="vfy-copy-container" style="width: 100%;">
+                        <textarea name="descricao" id="idescricao" cols="50" rows="5" data-i18n-ph="script-ph-desc" placeholder="Breve explicação sobre o vídeo..." style="resize: none; width: 100%;">{{#if isEdit}}{{roteiro.descricao}}{{/if}}</textarea>
+                        <button type="button" class="vfy-copy-btn" onclick="vfyCopyText('idescricao')" data-i18n-title="btn-copy" title="Copiar"><span class="material-icons">content_copy</span></button>
+                    </div>
                 </div>
                 <hr>
                 <h2 data-i18n="script-h2-struct">Estrutura do Roteiro</h2>
                 <p data-i18n="script-p-struct">Dividida em Introdução, Desenvolvimento e Conclusão</p>
-                <div class="input">
+                <div class="input" style="flex-direction: column; align-items: flex-start;">
                     <label for="iintroducao" data-i18n="script-label-intro">Introdução: </label>
-                    <textarea name="introducao" id="iintroducao" cols="100" rows="5" data-i18n-ph="script-ph-intro" placeholder="Como começa o vídeo?" style="resize: none;">{{#if isEdit}}{{roteiro.introducao}}{{/if}}</textarea>
+                    <div class="vfy-copy-container" style="width: 100%;">
+                        <textarea name="introducao" id="iintroducao" cols="100" rows="5" data-i18n-ph="script-ph-intro" placeholder="Como começa o vídeo?" style="resize: none; width: 100%;">{{#if isEdit}}{{roteiro.introducao}}{{/if}}</textarea>
+                        <button type="button" class="vfy-copy-btn" onclick="vfyCopyText('iintroducao')" data-i18n-title="btn-copy" title="Copiar"><span class="material-icons">content_copy</span></button>
+                    </div>
                 </div>
                 <hr>
-                <div class="input">
+                <div class="input" style="flex-direction: column; align-items: flex-start;">
                     <label for="idesenvolvimento" data-i18n="script-label-dev">Desenvolvimento: </label>
-                    <textarea name="desenvolvimento" id="idesenvolvimento" cols="100" rows="20" data-i18n-ph="script-ph-dev" placeholder="O que você quer ensinar, mostrar ou fazer nesse vídeo?" style="resize: none;">{{#if isEdit}}{{roteiro.desenvolvimento}}{{/if}}</textarea>
+                    <div class="vfy-copy-container" style="width: 100%;">
+                        <textarea name="desenvolvimento" id="idesenvolvimento" cols="100" rows="20" data-i18n-ph="script-ph-dev" placeholder="O que você quer ensinar, mostrar ou fazer nesse vídeo?" style="resize: none; width: 100%;">{{#if isEdit}}{{roteiro.desenvolvimento}}{{/if}}</textarea>
+                        <button type="button" class="vfy-copy-btn" onclick="vfyCopyText('idesenvolvimento')" data-i18n-title="btn-copy" title="Copiar"><span class="material-icons">content_copy</span></button>
+                    </div>
                 </div>
                 <hr>
-                <div class="input">
+                <div class="input" style="flex-direction: column; align-items: flex-start;">
                     <label for="iconclusao" data-i18n="script-label-concl">Conclusão: </label>
-                    <textarea name="conclusao" id="iconclusao" cols="100" rows="5" data-i18n-ph="script-ph-concl" placeholder="Frase de despedida, convite para o próximo vídeo, agradecimento, etc." style="resize: none;">{{#if isEdit}}{{roteiro.conclusao}}{{/if}}</textarea>
+                    <div class="vfy-copy-container" style="width: 100%;">
+                        <textarea name="conclusao" id="iconclusao" cols="100" rows="5" data-i18n-ph="script-ph-concl" placeholder="Frase de despedida, convite para o próximo vídeo, agradecimento, etc." style="resize: none; width: 100%;">{{#if isEdit}}{{roteiro.conclusao}}{{/if}}</textarea>
+                        <button type="button" class="vfy-copy-btn" onclick="vfyCopyText('iconclusao')" data-i18n-title="btn-copy" title="Copiar"><span class="material-icons">content_copy</span></button>
+                    </div>
                 </div>
                 <div class="input">
                     <input class="submit" type="submit" data-i18n-val="script-btn-submit" value="Enviar">

@@ -151,6 +151,7 @@ const FORM_TRANSLATIONS = {
     'script-ph-concl':      'Frase de despedida, convite para o próximo vídeo, agradecimento, etc.',
     'script-btn-submit':    'Enviar',
     'script-btn-cancel':    'Cancelar',
+    'btn-copy':             'Copiar',
 
     // download form
     'dl-title':         'Baixar Vídeo/Imagem',
@@ -269,6 +270,7 @@ const FORM_TRANSLATIONS = {
     'script-ph-concl':      'Farewell phrase, invitation to the next video, thanks, etc.',
     'script-btn-submit':    'Submit',
     'script-btn-cancel':    'Cancel',
+    'btn-copy':             'Copy',
 
     // download form
     'dl-title':         'Download Video/Image',
@@ -402,6 +404,38 @@ window.openFolder = function(filePath) {
     .catch(err => {
         console.error('Erro ao abrir pasta:', err);
         alert('Erro ao tentar abrir a pasta.');
+    });
+};
+
+window.vfyCopyText = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    let textToCopy = "";
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        textToCopy = el.value;
+    } else {
+        textToCopy = el.innerText;
+    }
+
+    if (!textToCopy) return;
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const btn = document.querySelector(`button[onclick*="vfyCopyText('${id}')"]`);
+        if (btn) {
+            const originalHTML = btn.innerHTML;
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            
+            btn.innerHTML = '<span class="material-icons" style="font-size: 18px;">check</span>';
+            btn.classList.add('vfy-copy-success');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('vfy-copy-success');
+            }, 1500);
+        }
+    }).catch(err => {
+        console.error('Erro ao copiar texto:', err);
     });
 };
 
