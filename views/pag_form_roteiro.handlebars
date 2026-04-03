@@ -4,6 +4,11 @@
             <p data-i18n="script-subtitle">Nenhum roteiro ainda? Comece transformando uma ideia em roteiro.</p>
             <hr>
             <form action="{{#if isEdit}}/editar_roteiro/{{roteiro.id}}{{else}}/novo_roteiro{{/if}}" method="post" enctype="multipart/form-data" autocomplete="on">
+                {{#unless isEdit}}
+                <div style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.5); color: var(--text-color, inherit); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95em;">
+                    <span data-i18n="script-warning-autosave">⚠️ <strong>Primeiro Roteiro?</strong> Salve manualmente ao menos uma vez (botão Enviar). O salvamento automático apenas previne perda de dados temporária.</span>
+                </div>
+                {{/unless}}
                 <div class="input">
                     <label for="ititulo" data-i18n="script-label-title2">Título do Vídeo: </label>
                     <input type="text" name="titulo" id="ititulo" required data-i18n-ph="script-ph-title2" placeholder="Nome do vídeo/roteiro..." value="{{#if isEdit}}{{roteiro.titulo}}{{/if}}">
@@ -38,8 +43,15 @@
                     </div>
                 </div>
                 <hr>
-                <h2 data-i18n="script-h2-struct">Estrutura do Roteiro</h2>
-                <p data-i18n="script-p-struct">Dividida em Introdução, Desenvolvimento e Conclusão</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <h2 data-i18n="script-h2-struct">Estrutura do Roteiro</h2>
+                        <p data-i18n="script-p-struct">Dividida em Introdução, Desenvolvimento e Conclusão</p>
+                    </div>
+                    <div id="vfy-word-counter" style="text-align: right; color: var(--text-color); font-size: 0.9em; background: rgba(128, 128, 128, 0.1); border: 1px solid rgba(128, 128, 128, 0.2); padding: 5px 10px; border-radius: 5px; margin-bottom: 10px;">
+                        <span id="vfy-words">0</span> palavras | ~<span id="vfy-pages">0</span> pág
+                    </div>
+                </div>
                 <div class="input" style="flex-direction: column; align-items: flex-start;">
                     <label for="iintroducao" data-i18n="script-label-intro">Introdução: </label>
                     <div class="vfy-copy-container" style="width: 100%;">

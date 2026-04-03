@@ -208,6 +208,14 @@ const FORM_TRANSLATIONS = {
     'about-desc':           'É uma aplicação pessoal feita para quem cria vídeos para redes sociais. Aqui você pode organizar roteiros, salvar ideias, baixar vídeos e imagens tudo em um só lugar, de forma prática.',
     'about-author-title':   'Quem Fez?',
     'about-author-desc':    'Este projeto foi desenvolvido por Guilherme William, com o objetivo de ajudar criadores a manterem seu conteúdo organizado e acessível.',
+    
+    // toast notifications
+    'toast-autosave':       'Salvo automaticamente às {time}',
+    'toast-undo':           'Ação desfeita',
+    'toast-redo':           'Ação refeita',
+    'status-unsaved':       '⚠️ Mudanças não salvas...',
+    'status-saved':         '✔️ Salvo',
+    'script-warning-autosave': '⚠️ <strong>Primeiro Roteiro?</strong> Salve manualmente ao menos uma vez (botão Enviar). O salvamento automático apenas previne perda de dados temporária.',
   },
   en: {
     // common
@@ -327,6 +335,14 @@ const FORM_TRANSLATIONS = {
     'about-desc':           'It is a personal application made for those who create videos for social networks. Here you can organize scripts, save ideas, download videos and images all in one place, in a practical way.',
     'about-author-title':   'Who Made It?',
     'about-author-desc':    'This project was developed by Guilherme William, with the aim of helping creators keep their content organized and accessible.',
+
+    // toast notifications
+    'toast-autosave':       'Automatically saved at {time}',
+    'toast-undo':           'Action undone',
+    'toast-redo':           'Action redone',
+    'status-unsaved':       '⚠️ Unsaved changes...',
+    'status-saved':         '✔️ Saved',
+    'script-warning-autosave': '⚠️ <strong>New Script?</strong> Save manually at least once (Submit button). Autosave only prevents temporary data loss.',
   }
 };
 
@@ -340,11 +356,11 @@ function applyFormLang(lang) {
   window.VFY_EXPAND = t['card-btn-expand'].replace('▼ ', '');
   window.VFY_COLLAPSE = t['card-btn-collapse'].replace('▲ ', '');
 
-  // Text content updates (elements with data-i18n attribute)
+  // Html content updates (elements with data-i18n attribute)
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (t[key] !== undefined) {
-      el.textContent = t[key];
+      el.innerHTML = t[key];
     }
   });
 
@@ -372,6 +388,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   applyTheme(savedTheme);
   applyLang(savedLang);
+
+  // Inicializa os novos recursos
+  initAutoSave();
+  initUndoRedoNotifications();
+  initWordCounter();
 });
 
 // ---- Utility functions --------------------------------------------
@@ -438,4 +459,278 @@ window.vfyCopyText = function(id) {
         console.error('Erro ao copiar texto:', err);
     });
 };
+
+// ===================================================
+// Videify — Autosave, Undo/Redo & Word Counter
+// ===================================================
+
+function showToast(message) {
+    let toastContainer = document.getElementById('vfy-toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'vfy-toast-container';
+        toastContainer.style.position = 'fixed';
+        toastContainer.style.bottom = '20px';
+        toastContainer.style.right = '20px';
+        toastContainer.style.display = 'flex';
+        toastContainer.style.flexDirection = 'column';
+        toastContainer.style.gap = '10px';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toast = document.createElement('div');
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    toast.style.background = isDark ? '#2e2e2e' : '#fff';
+    toast.style.color = isDark ? '#fff' : '#333';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '8px';
+    toast.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+    toast.style.borderLeft = '4px solid #ff8e99';
+    toast.style.fontSize = '0.9em';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
+    toast.style.transition = 'all 0.3s ease';
+    toast.textContent = message;
+
+    toastContainer.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            if (toast.parentElement) toast.remove();
+        }, 300);
+    }, 3000);
+}
+
+function initAutoSave() {
+    const isFormPage = window.location.pathname.startsWith('/nova_ideia') || 
+                       window.location.pathname.startsWith('/editar_ideia') ||
+                       window.location.pathname.startsWith('/novo_roteiro') ||
+                       window.location.pathname.startsWith('/editar_roteiro');
+
+    if (!isFormPage) return;
+
+    const form = document.querySelector('form');
+    if (!form) return;
+
+    const storageKey = 'vfy_autosave_' + window.location.pathname;
+
+    let statusPopup = null;
+
+    const lang = getCurrentLang();
+    const t = FORM_TRANSLATIONS[lang] || FORM_TRANSLATIONS['pt'];
+    const txtUnsaved = t['status-unsaved'] || '⚠️ Mudanças não salvas...';
+    const txtSaved = t['status-saved'] || '✔️ Salvo';
+
+    function updateStatus(state) {
+        if (!statusPopup) {
+            statusPopup = document.createElement('div');
+            statusPopup.id = 'vfy-persistent-toast';
+            statusPopup.style.position = 'fixed';
+            statusPopup.style.bottom = '80px';
+            statusPopup.style.right = '20px';
+            statusPopup.style.padding = '10px 20px';
+            statusPopup.style.borderRadius = '8px';
+            statusPopup.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+            statusPopup.style.fontSize = '1em';
+            statusPopup.style.fontWeight = 'bold';
+            statusPopup.style.transition = 'all 0.3s ease';
+            statusPopup.style.zIndex = '9998';
+            statusPopup.style.opacity = '0';
+            statusPopup.style.transform = 'translateY(20px)';
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            statusPopup.style.background = isDark ? '#2e2e2e' : '#fff';
+            statusPopup.style.color = isDark ? '#fff' : '#333';
+            document.body.appendChild(statusPopup);
+        }
+
+        if (state === 'unsaved') {
+            const btnText = lang === 'en' ? 'Save' : 'Salvar';
+            statusPopup.innerHTML = `<span>${txtUnsaved}</span> <button id="vfy-force-save-btn" style="margin-left: 15px; padding: 4px 12px; border-radius: 6px; background: #ff8e99; color: #2e2e2e; cursor: pointer; border: none; font-size: 0.85em; font-weight: bold;">${btnText}</button>`;
+            statusPopup.style.borderLeft = '4px solid #ff8e99';
+            
+            setTimeout(() => {
+                const btn = document.getElementById('vfy-force-save-btn');
+                if (btn) btn.addEventListener('click', triggerSave);
+            }, 0);
+
+            // Trigger animation immediately
+            setTimeout(() => {
+                statusPopup.style.opacity = '1';
+                statusPopup.style.transform = 'translateY(0)';
+            }, 10);
+        } else if (state === 'saved') {
+            statusPopup.textContent = txtSaved;
+            statusPopup.style.borderLeft = '4px solid #28a745';
+            statusPopup.style.opacity = '1';
+            statusPopup.style.transform = 'translateY(0)';
+            
+            // Fades out after 3 seconds
+            setTimeout(() => {
+                if (statusPopup.textContent === txtSaved) {
+                    statusPopup.style.opacity = '0';
+                    statusPopup.style.transform = 'translateY(20px)';
+                }
+            }, 3000);
+        }
+    }
+
+    // Load draft if exists
+    const draft = localStorage.getItem(storageKey);
+    let loadedDraft = false;
+    if (draft) {
+        try {
+            const data = JSON.parse(draft);
+            for (const [name, value] of Object.entries(data)) {
+                const input = form.elements.namedItem(name);
+                if (input && name !== 'thumbnail_file') {
+                    input.value = value;
+                }
+            }
+            loadedDraft = true;
+        } catch(e) {}
+    }
+
+    let saveTimeout;
+
+    function triggerSave() {
+        const formData = new FormData(form);
+        const data = {};
+        for (const [key, value] of formData.entries()) {
+            if (typeof value === 'string') {
+                data[key] = value;
+            }
+        }
+        localStorage.setItem(storageKey, JSON.stringify(data));
+        
+        const lang = getCurrentLang();
+        const t = FORM_TRANSLATIONS[lang] || FORM_TRANSLATIONS['pt'];
+        const timeStr = new Date().toLocaleTimeString(lang === 'pt' ? 'pt-BR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+        let msg = t['toast-autosave'] || 'Salvo automaticamente às {time}';
+        msg = msg.replace('{time}', timeStr);
+        showToast(msg);
+        updateStatus('saved');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const cmdKey = isMac ? e.metaKey : e.ctrlKey;
+        if (cmdKey && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            triggerSave();
+        }
+    });
+
+    if (loadedDraft) {
+        updateStatus('unsaved');
+    }
+
+    function onInputTrigger(e) {
+        if (e.target.type === 'file') return;
+        updateStatus('unsaved');
+        
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            triggerSave();
+        }, 800); // reduced from 1500 to 800ms
+    }
+
+    function onBlurTrigger(e) {
+        if (e.target.type === 'file') return;
+        clearTimeout(saveTimeout);
+        if (statusPopup && statusPopup.textContent.includes(txtUnsaved)) {
+            triggerSave();
+        }
+    }
+
+    form.addEventListener('input', onInputTrigger);
+    form.addEventListener('change', onBlurTrigger);
+    form.addEventListener('focusout', onBlurTrigger);
+
+    form.addEventListener('submit', () => {
+        localStorage.removeItem(storageKey);
+    });
+}
+
+function initUndoRedoNotifications() {
+    document.addEventListener('keydown', (e) => {
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const cmdKey = isMac ? e.metaKey : e.ctrlKey;
+        
+        // Verifica se o foco esta num input ou textarea
+        const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+        if (!isInput) return;
+
+        if (cmdKey && e.key.toLowerCase() === 'z') {
+            if (e.shiftKey) {
+                // Redo
+                requestAnimationFrame(() => {
+                    const lang = getCurrentLang();
+                    const t = FORM_TRANSLATIONS[lang] || FORM_TRANSLATIONS['pt'];
+                    showToast(t['toast-redo'] || 'Ação refeita');
+                });
+            } else {
+                // Undo
+                requestAnimationFrame(() => {
+                    const lang = getCurrentLang();
+                    const t = FORM_TRANSLATIONS[lang] || FORM_TRANSLATIONS['pt'];
+                    showToast(t['toast-undo'] || 'Ação desfeita');
+                });
+            }
+        } else if (cmdKey && e.key.toLowerCase() === 'y') {
+            // Redo
+            requestAnimationFrame(() => {
+                const lang = getCurrentLang();
+                const t = FORM_TRANSLATIONS[lang] || FORM_TRANSLATIONS['pt'];
+                showToast(t['toast-redo'] || 'Ação refeita');
+            });
+        }
+    });
+}
+
+function initWordCounter() {
+    const wordsEl = document.getElementById('vfy-words');
+    const pagesEl = document.getElementById('vfy-pages');
+    if (!wordsEl || !pagesEl) return;
+
+    // Count from specific textareas usually used in script
+    const textareas = [
+        document.getElementById('iintroducao'),
+        document.getElementById('idesenvolvimento'),
+        document.getElementById('iconclusao'),
+        document.getElementById('idescricao')
+    ];
+
+    function updateCounter() {
+        let text = '';
+        textareas.forEach(ta => {
+            if (ta && ta.value) {
+                text += ta.value + ' ';
+            }
+        });
+
+        const words = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+        const pages = (words / 250).toFixed(1);
+
+        wordsEl.textContent = words;
+        pagesEl.textContent = pages > 0 ? pages : '0';
+    }
+
+    textareas.forEach(ta => {
+        if (ta) ta.addEventListener('input', updateCounter);
+    });
+
+    // Initial update
+    updateCounter();
+}
+
 

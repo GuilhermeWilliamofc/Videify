@@ -62,28 +62,28 @@
                 </div>
                 {{/if}}
 
-                <p class="card-text mb-3"><strong data-i18n="card-summary">Resumo:</strong> <span style="opacity: 0.9;">{{descricao}}</span></p>
+                <p class="card-text mb-3"><strong data-i18n="card-summary">Resumo:</strong> <span class="vfy-resumo-text" style="opacity: 0.9;">{{descricao}}</span></p>
                 <hr style="border-top: 1px solid rgba(255,255,255,0.15);">
 
                 <!-- Intro preview with collapse -->
                 <p class="card-text small mb-2">
-                    <strong style="color: #fff;" data-i18n="card-intro">Introdução:</strong>
+                    <strong style="color: var(--text-color, #fff);" data-i18n="card-intro">Introdução:</strong>
                     <br>
-                    <span class="vfy-preview-text" style="opacity: 0.85; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">{{introducao}}</span>
+                    <span class="vfy-preview-text vfy-intro-text" style="opacity: 0.85; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">{{introducao}}</span>
                 </p>
 
                 <!-- Dev preview with expand -->
                 <p class="card-text small mb-2">
-                    <strong style="color: #fff;" data-i18n="card-dev">Desenvolvimento:</strong>
+                    <strong style="color: var(--text-color, #fff);" data-i18n="card-dev">Desenvolvimento:</strong>
                     <br>
-                    <span class="vfy-preview-text" style="opacity: 0.85; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">{{desenvolvimento}}</span>
+                    <span class="vfy-preview-text vfy-dev-text" style="opacity: 0.85; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">{{desenvolvimento}}</span>
                 </p>
 
                 <!-- Conclusion preview -->
                 <p class="card-text small mb-2">
-                    <strong style="color: #fff;" data-i18n="card-concl">Conclusão:</strong>
+                    <strong style="color: var(--text-color, #fff);" data-i18n="card-concl">Conclusão:</strong>
                     <br>
-                    <span class="vfy-preview-text" style="opacity: 0.85; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">{{conclusao}}</span>
+                    <span class="vfy-preview-text vfy-concl-text" style="opacity: 0.85; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">{{conclusao}}</span>
                 </p>
 
                 <!-- Expand / collapse button -->
@@ -96,8 +96,9 @@
                 </button>
                 
                 <div class="d-flex justify-content-between mt-auto">
-                    <a href="/editar_roteiro/{{id}}" class="btn btn-sm" data-i18n="card-btn-edit" style="background-color: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.1); width: 48%;">✎ Editar</a>
-                    <form action="/deletar_roteiro/{{id}}" method="POST" style="display:inline; width: 48%;">
+                    <button type="button" class="btn btn-sm btn-primary" style="background-color: rgba(13, 110, 253, 0.2); border: 1px solid #0d6efd; color: #6ea8fe; width: 31%;" onclick="vfyOpenReadModal(this)">&#x1F441;&#xFE0F; Ler</button>
+                    <a href="/editar_roteiro/{{id}}" class="btn btn-sm vfy-edit-link" data-i18n="card-btn-edit" style="background-color: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.1); width: 31%;">✎ Editar</a>
+                    <form action="/deletar_roteiro/{{id}}" method="POST" style="display:inline; width: 31%;">
                         <button type="submit" class="btn btn-sm" data-i18n="card-btn-delete" style="background-color: rgba(220,53,69,0.2); border: 1px solid #dc3545; color: #ff8e99; width: 100%;" onclick="return confirm(window.VFY_CONFIRM_DELETE_SCRIPT || 'Tem certeza que deseja excluir este roteiro?');">✕ Excluir</button>
                     </form>
                 </div>
@@ -109,6 +110,32 @@
 {{else}}
 <p class="text-muted text-center pt-4" data-i18n="page-scripts-empty">Nenhum roteiro encontrado. Adicione um novo!</p>
 {{/if}}
+
+<!-- Modal Ler Roteiro -->
+<div id="vfy-read-modal" class="modal" tabindex="-1" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.78); z-index: 1050; overflow-y: auto;">
+    <div class="modal-dialog" style="max-width: 800px; margin: 40px auto;">
+        <div class="modal-content" style="background: var(--bg-card, #2b0f14); color: var(--text-color, #e0e0e0); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(130,130,130,0.2); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h4 id="vfy-modal-title" style="margin: 0; font-weight: bold; color: var(--text-color, #fff);">Título</h4>
+                <button type="button" onclick="vfyCloseReadModal()" style="background: transparent; border: none; font-size: 2rem; color: #ff8e99; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 24px; white-space: pre-wrap; font-size: 1.05rem; line-height: 1.6;">
+                <div style="background: rgba(130,130,130,0.1); padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                    <strong style="color: #ff8e99;">Resumo: </strong> <span id="vfy-modal-resumo" style="color: var(--text-color, #ddd);">...</span>
+                </div>
+                
+                <h5 style="color: #ff8e99; font-weight: bold; border-bottom: 1px dashed rgba(130,130,130,0.5); padding-bottom: 5px;">Introdução</h5>
+                <p id="vfy-modal-intro" style="margin-top: 5px; margin-bottom: 30px; color: var(--text-color, #eee);">...</p>
+                
+                <h5 style="color: #ff8e99; font-weight: bold; border-bottom: 1px dashed rgba(130,130,130,0.5); padding-bottom: 5px;">Desenvolvimento</h5>
+                <p id="vfy-modal-dev" style="margin-top: 5px; margin-bottom: 30px; color: var(--text-color, #eee);">...</p>
+                
+                <h5 style="color: #ff8e99; font-weight: bold; border-bottom: 1px dashed rgba(130,130,130,0.5); padding-bottom: 5px;">Conclusão</h5>
+                <p id="vfy-modal-concl" style="margin-top: 5px; margin-bottom: 15px; color: var(--text-color, #eee);">...</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 function vfyTogglePreview(btn) {
@@ -126,4 +153,71 @@ function vfyTogglePreview(btn) {
         btn.innerHTML = '▼ <span>' + expandLabel + '</span>';
     }
 }
+
+// Modal Read Logic
+function vfyOpenReadModal(btn) {
+    const card = btn.closest('.card-body');
+    document.getElementById('vfy-modal-title').textContent = card.querySelector('.card-title').textContent.replace('⚠️ Rascunho não salvo', '').trim();
+    document.getElementById('vfy-modal-resumo').textContent = card.querySelector('.vfy-resumo-text').textContent;
+    document.getElementById('vfy-modal-intro').textContent = card.querySelector('.vfy-intro-text').textContent;
+    document.getElementById('vfy-modal-dev').textContent = card.querySelector('.vfy-dev-text').textContent;
+    document.getElementById('vfy-modal-concl').textContent = card.querySelector('.vfy-concl-text').textContent;
+    
+    document.getElementById('vfy-read-modal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function vfyCloseReadModal() {
+    document.getElementById('vfy-read-modal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Autosave Preview Sync Logic
+document.addEventListener('DOMContentLoaded', () => {
+    const editLinks = document.querySelectorAll('.vfy-edit-link');
+    editLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if(!href) return;
+        const storageKey = 'vfy_autosave_' + href;
+        const draftStr = localStorage.getItem(storageKey);
+        
+        if(draftStr) {
+            try {
+                const draft = JSON.parse(draftStr);
+                const card = link.closest('.card-body');
+                
+                if(draft.titulo) card.querySelector('.card-title').textContent = draft.titulo + ' ';
+                if(draft.descricao) card.querySelector('.vfy-resumo-text').textContent = draft.descricao;
+                if(draft.introducao) card.querySelector('.vfy-intro-text').textContent = draft.introducao;
+                if(draft.desenvolvimento) card.querySelector('.vfy-dev-text').textContent = draft.desenvolvimento;
+                if(draft.conclusao) card.querySelector('.vfy-concl-text').textContent = draft.conclusao;
+                
+                const titleEl = card.querySelector('.card-title');
+                if(titleEl) {
+                    const badge = document.createElement('span');
+                    badge.innerHTML = '⚠️ Rascunho não salvo';
+                    badge.style.fontSize = '0.7rem';
+                    badge.style.backgroundColor = 'rgba(255, 193, 7, 0.2)';
+                    badge.style.color = '#ffc107';
+                    badge.style.border = '1px solid #ffc107';
+                    badge.style.padding = '2px 6px';
+                    badge.style.borderRadius = '4px';
+                    badge.style.marginLeft = '10px';
+                    badge.style.fontWeight = 'bold';
+                    badge.style.verticalAlign = 'middle';
+                    titleEl.appendChild(badge);
+                }
+            } catch(e) {
+                console.error('Error syncing autosave to preview:', e);
+            }
+        }
+    });
+
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('vfy-read-modal');
+        if (e.target === modal) {
+            vfyCloseReadModal();
+        }
+    });
+});
 </script>
