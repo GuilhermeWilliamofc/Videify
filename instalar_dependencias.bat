@@ -39,6 +39,19 @@ if %errorlevel% neq 0 (
 echo.
 echo [OK] pytubefix instalado com sucesso!
 echo.
+
+echo Instalando bibliotecas para Remocao de Fundo...
+%PYTHON_CMD% -m pip install "rembg[cpu]" onnxruntime pillow --upgrade
+if %errorlevel% neq 0 (
+    echo [ERRO] Falha ao instalar rembg e pillow.
+    pause
+    exit /b 1
+)
+
+echo.
+echo [OK] Dependencias de IA (rembg) instaladas com sucesso!
+echo.
+
 echo ============================================
 echo  Tudo pronto! Pode abrir o Videify agora.
 echo ============================================

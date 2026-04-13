@@ -7,9 +7,90 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const multer = require('multer');
 const { shell } = require('electron');
+const { setActivity, pingPresence } = require('./discord_presence');
 
 const app = express();
 const __dirnamePath = path.resolve();
+
+// ============================================================
+// CAMINHOS PERSISTENTES — independentes da pasta do programa
+// ============================================================
+
+// Dados JSON ficam em %APPDATA%\Videify
+const APPDATA_DIR  = path.join(process.env.APPDATA || path.join(require('os').homedir(), '.videify'), 'Videify');
+// Mídias ficam em C:\Users\<user>\Downloads\Videify
+const DOWNLOADS_DIR = path.join(require('os').homedir(), 'Downloads', 'Videify');
+const THUMBNAILS_DIR = path.join(DOWNLOADS_DIR, 'thumbnails');
+
+// Garante que as pastas existam
+[APPDATA_DIR, DOWNLOADS_DIR, THUMBNAILS_DIR].forEach(dir => {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
+
+// ---- Migração automática (roda só uma vez) ----
+// Se o usuário tinha dados na pasta antiga do projeto, movemos para o novo local.
+const OLD_DATA_DIR = path.join(__dirnamePath, 'data');
+const OLD_DOWNLOADS_DIR = path.join(__dirnamePath, 'Downloads');
+
+const migrateIfNeeded = (oldFile, newFile) => {
+    if (fs.existsSync(oldFile) && !fs.existsSync(newFile)) {
+        fs.copyFileSync(oldFile, newFile);
+        console.log(`✅ Migrado: ${path.basename(oldFile)} -> AppData`);
+    }
+};
+
+// Migra os arquivos JSON de dados
+const migrateOldData = () => {
+    if (!fs.existsSync(OLD_DATA_DIR)) return;
+    ['ideias.json', 'roteiros.json', 'downloads.json'].forEach(f => {
+        migrateIfNeeded(path.join(OLD_DATA_DIR, f), path.join(APPDATA_DIR, f));
+    });
+
+    // Migra pastas de vídeo da pasta antiga
+    if (fs.existsSync(OLD_DOWNLOADS_DIR)) {
+        const items = fs.readdirSync(OLD_DOWNLOADS_DIR);
+        items.forEach(item => {
+            const src = path.join(OLD_DOWNLOADS_DIR, item);
+            const dest = path.join(DOWNLOADS_DIR, item);
+            if (!fs.existsSync(dest)) {
+                try {
+                    fs.renameSync(src, dest);
+                    console.log(`✅ Movido: ${item} -> Downloads\\Videify`);
+                } catch(e) {
+                    console.warn(`⚠️ Não foi possível mover ${item}:`, e.message);
+                }
+            }
+        });
+    }
+};
+
+migrateOldData();
+
+// ---- Banco de dados ----
+const dataDir = APPDATA_DIR;
+const ideiasFile    = path.join(dataDir, 'ideias.json');
+const roteirosFile  = path.join(dataDir, 'roteiros.json');
+const downloadsFile = path.join(dataDir, 'downloads.json');
+
+if (!fs.existsSync(ideiasFile))    fs.writeFileSync(ideiasFile,    JSON.stringify([]));
+if (!fs.existsSync(roteirosFile))  fs.writeFileSync(roteirosFile,  JSON.stringify([]));
+if (!fs.existsSync(downloadsFile)) fs.writeFileSync(downloadsFile, JSON.stringify([]));
+
+// ---- Multer (thumbnails dos roteiros salvas em Downloads/Videify/thumbnails) ----
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, THUMBNAILS_DIR);
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, 'roteiro_thumb_' + Date.now() + ext);
+  }
+});
+const upload = multer({ storage: storage });
+
+// Helper functions for DB
+const readDB  = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
+const writeDB = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
 // Sessão
 app.use(session({
@@ -26,7 +107,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Body Parser alternativo
+// Body Parser
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -39,47 +120,85 @@ app.engine('handlebars', engine({
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirnamePath, 'views'));
 
-// Local Database Setup
-const dataDir = path.join(__dirnamePath, 'data');
-const ideiasFile = path.join(dataDir, 'ideias.json');
-const roteirosFile = path.join(dataDir, 'roteiros.json');
-const downloadsFile = path.join(dataDir, 'downloads.json');
-
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
-if (!fs.existsSync(ideiasFile)) fs.writeFileSync(ideiasFile, JSON.stringify([]));
-if (!fs.existsSync(roteirosFile)) fs.writeFileSync(roteirosFile, JSON.stringify([]));
-if (!fs.existsSync(downloadsFile)) fs.writeFileSync(downloadsFile, JSON.stringify([]));
-
-const thumbnailsDir = path.join(__dirnamePath, 'Downloads', 'thumbnails');
-if (!fs.existsSync(thumbnailsDir)) fs.mkdirSync(thumbnailsDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, thumbnailsDir);
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    cb(null, 'roteiro_thumb_' + Date.now() + ext);
-  }
-});
-const upload = multer({ storage: storage });
-
-// Helper functions for DB
-const readDB = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
-const writeDB = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2));
-
-// Public
+// Arquivos estáticos
 app.use(express.static(path.join(__dirnamePath, 'public')));
-app.use('/Downloads', express.static(path.join(__dirnamePath, 'Downloads')));
+// Serve arquivos de media do diretório persistente
+app.use('/Downloads', express.static(DOWNLOADS_DIR));
+
+// Função para sincronizar downloads físicos com o banco de dados
+const syncDownloadsFromDisk = () => {
+    if (!fs.existsSync(DOWNLOADS_DIR)) return;
+
+    let downloads = readDB(downloadsFile);
+    const existingPaths = new Set(downloads.map(d => d.path));
+    let changes = false;
+
+    const items = fs.readdirSync(DOWNLOADS_DIR);
+
+    for (const item of items) {
+        const fullItemPath = path.join(DOWNLOADS_DIR, item);
+        const stats = fs.statSync(fullItemPath);
+
+        // Caso 1: Pastas de Video (Youtube)
+        if (stats.isDirectory() && item.startsWith("Video - ")) {
+            const folderFiles = fs.readdirSync(fullItemPath);
+            const mediaFile = folderFiles.find(f => f.endsWith('.mp4') || f.endsWith('.mp3') || f.endsWith('.opus'));
+            
+            if (mediaFile) {
+                const dbPath = `/Downloads/${item}/${mediaFile}`;
+                if (!existingPaths.has(dbPath)) {
+                    let type = "yt_video";
+                    if (mediaFile.endsWith(".mp3")) type = "yt_mp3";
+                    if (mediaFile.endsWith(".opus")) type = "yt_opus";
+
+                    const hasThumb = folderFiles.includes("thumbnail.jpg");
+                    
+                    downloads.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        title: mediaFile.replace(/\.(mp4|mp3|opus)$/, ''),
+                        type: type,
+                        path: dbPath,
+                        thumbnail: hasThumb ? `/Downloads/${item}/thumbnail.jpg` : null,
+                        date: stats.birthtime.toISOString()
+                    });
+                    existingPaths.add(dbPath);
+                    changes = true;
+                }
+            }
+        }
+        // Caso 2: Imagens avulsas na raiz
+        else if (stats.isFile() && /\.(jpg|jpeg|png|webp)$/i.test(item)) {
+            const dbPath = `/Downloads/${item}`;
+            if (!existingPaths.has(dbPath)) {
+                downloads.push({
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                    title: item,
+                    type: "img",
+                    path: dbPath,
+                    thumbnail: dbPath,
+                    date: stats.birthtime.toISOString()
+                });
+                existingPaths.add(dbPath);
+                changes = true;
+            }
+        }
+    }
+
+    if (changes) {
+        writeDB(downloadsFile, downloads);
+    }
+};
 
 
 
 // Rotas
 app.get('/', (req, res) => {
+  setActivity('Página Inicial');
   res.render('homepage');
 });
 
 app.get('/ideias', (req, res) => {
+  setActivity('Minhas Ideias');
   const ideias = readDB(ideiasFile);
   res.render('pag_ideias', { ideias });
 });
@@ -104,6 +223,7 @@ app.post('/deletar_ideia/:id', (req, res) => {
 });
 
 app.get('/editar_ideia/:id', (req, res) => {
+  setActivity('Editando Ideia');
   const ideias = readDB(ideiasFile);
   const ideia = ideias.find(i => i.id === req.params.id);
   if (!ideia) {
@@ -127,12 +247,13 @@ app.post('/editar_ideia/:id', (req, res) => {
 });
 
 app.get('/roteiros', (req, res) => {
+  setActivity('Meus Roteiros');
   let roteiros = readDB(roteirosFile);
   let changes = false;
   
   roteiros = roteiros.map(r => {
     if (r.thumbnail) {
-      const thumbPath = path.join(__dirnamePath, r.thumbnail.startsWith('/') ? r.thumbnail.substring(1) : r.thumbnail);
+      const thumbPath = path.join(DOWNLOADS_DIR, r.thumbnail.replace('/Downloads/', '').replace(/^\//, ''));
       if (!fs.existsSync(thumbPath)) {
         r.thumbnail = '';
         changes = true;
@@ -180,6 +301,7 @@ app.post('/deletar_roteiro/:id', (req, res) => {
 });
 
 app.get('/editar_roteiro/:id', (req, res) => {
+  setActivity('Editando Roteiro');
   const roteiros = readDB(roteirosFile);
   const roteiro = roteiros.find(r => r.id === req.params.id);
   if (!roteiro) {
@@ -209,21 +331,25 @@ app.post('/editar_roteiro/:id', upload.single('thumbnail_file'), (req, res) => {
 });
 
 app.get('/downloads', (req, res) => {
+  setActivity('Meus Downloads');
+  syncDownloadsFromDisk();
   let downloads = readDB(downloadsFile);
   let changes = false;
 
   const validDownloads = downloads.filter(d => {
     if (d.path) {
-      const filePath = path.join(__dirnamePath, d.path.startsWith('/') ? d.path.substring(1) : d.path);
+      const relPath = d.path.replace('/Downloads/', '').replace(/^\//, '');
+      const filePath = path.join(DOWNLOADS_DIR, relPath);
       if (!fs.existsSync(filePath)) {
         changes = true;
         return false;
       }
     }
     if (d.thumbnail && typeof d.thumbnail === 'string') {
-      const thumbPath = path.join(__dirnamePath, d.thumbnail.startsWith('/') ? d.thumbnail.substring(1) : d.thumbnail);
+      const relThumb = d.thumbnail.replace('/Downloads/', '').replace(/^\//, '');
+      const thumbPath = path.join(DOWNLOADS_DIR, relThumb);
       if (!fs.existsSync(thumbPath)) {
-        d.thumbnail = null; // Remove reference to missing thumbnail
+        d.thumbnail = null;
         changes = true;
       }
     }
@@ -239,31 +365,49 @@ app.get('/downloads', (req, res) => {
 });
 
 app.get('/sobre', (req, res) => {
+  setActivity('Página de Sobre');
   res.render('pag_sobre');
 });
 
 app.get('/form_ideia', (req, res) => {
+  setActivity('Adicionando Nova Ideia');
   res.render('pag_form_ideia');
 });
 
 app.get('/form_roteiro', (req, res) => {
+  setActivity('Criando Novo Roteiro');
   res.render('pag_form_roteiro');
 });
 
 app.get('/form_download', (req, res) => {
+  setActivity('Baixando Vídeo');
   res.render('pag_form_download');
+});
+
+app.get('/remover_fundo', (req, res) => {
+  setActivity('Remoção de Fundo Inteligente');
+  res.render('pag_remover_fundo');
+});
+
+app.post('/api/presence_ping', (req, res) => {
+  pingPresence();
+  res.status(200).send("OK");
 });
 
 app.post('/open-folder', (req, res) => {
     const { path: filePath } = req.body;
-    console.log("📂 Solicitação para abrir pasta:", filePath);
     
     if (!filePath) return res.status(400).send("Caminho não fornecido");
     
-    const relativePath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-    const fullPath = path.resolve(path.join(__dirnamePath, relativePath));
+    // Tenta primeiro o caminho absoluto (ex: vindo do Python via DONE:)
+    // Se não existir, tenta resolver como caminho relativo ao DOWNLOADS_DIR
+    let fullPath = filePath;
+    if (!fs.existsSync(fullPath)) {
+        const cleanPath = filePath.replace('/Downloads/', '').replace(/^\//, '');
+        fullPath = path.join(DOWNLOADS_DIR, cleanPath);
+    }
     
-    console.log("📁 Caminho completo resolvido:", fullPath);
+    console.log("📂 Abrindo arquivo/pasta:", fullPath);
     
     if (fs.existsSync(fullPath)) {
       shell.showItemInFolder(fullPath);
@@ -321,7 +465,7 @@ app.post("/baixar-stream", (req, res) => {
 
     // Usamos aspas extras em volta dos caminhos para evitar erros com espaços no Windows
     // O shell: true do spawn pode ter problemas com caminhos com espaços se não forem escapados
-    pyProcess = spawn(foundCmd, [`"${scriptPath}"`, `"${link}"`, formatChoice], {
+    pyProcess = spawn(foundCmd, [`"${scriptPath}"`, `"${link}"`, formatChoice, `"${DOWNLOADS_DIR}"`], {
       shell: true,
       env: { ...process.env, PYTHONUNBUFFERED: "1" }
     });
@@ -382,11 +526,10 @@ app.post("/baixar-stream", (req, res) => {
     });
 
   } else if (tipo === "img") {
-    const downloadsDir = path.join(__dirnamePath, "Downloads");
-    if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir);
+    if (!fs.existsSync(DOWNLOADS_DIR)) fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
     const fileName = `imagem_${Date.now()}.jpg`;
-    const dest = path.join(downloadsDir, fileName);
-    const absDest = path.resolve(dest);
+    const dest = path.join(DOWNLOADS_DIR, fileName);
+    const absDest = dest;
 
     res.write(`data: TITLE:${fileName}\n\n`);
     res.write("data: STATUS:Baixando imagem...\n\n");
@@ -447,9 +590,8 @@ app.post("/baixar", (req, res) => {
   } 
   
   else if (tipo === "img") {
-    const downloadsDir = path.join(__dirnamePath, "Downloads");
-    if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir);
-    const dest = path.join(downloadsDir, `imagem_${Date.now()}.jpg`);
+    if (!fs.existsSync(DOWNLOADS_DIR)) fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
+    const dest = path.join(DOWNLOADS_DIR, `imagem_${Date.now()}.jpg`);
 
     fetch(link)
       .then(r => {
@@ -473,6 +615,91 @@ app.post("/baixar", (req, res) => {
     req.flash('error_msg', 'Tipo inválido.');
     res.redirect('/form_download');
   }
+});
+
+// Remover fundo
+app.post("/api/remover_fundo", upload.single('image_file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("Nenhuma imagem selecionada.");
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  setActivity('Editando imagem');
+
+  const scriptPath = path.join(__dirnamePath, "scripts", "remover_fundo.py");
+  if (!fs.existsSync(DOWNLOADS_DIR)) fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
+  
+  const ext = path.extname(req.file.originalname) || ".png";
+  const outputFileName = `bgless_${Date.now()}${ext === '.jpg' || ext === '.jpeg' ? '.png' : ext}`;
+  const outputPath = path.join(DOWNLOADS_DIR, outputFileName);
+  
+  const pythonCmds = ["python", "python3", "py"];
+  let pyProcess = null;
+  let foundCmd = null;
+
+  for (const cmd of pythonCmds) {
+    try {
+      const { spawnSync } = require('child_process');
+      const check = spawnSync(cmd, ['--version'], { shell: true });
+      if (check.status === 0) {
+        foundCmd = cmd;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  if (!foundCmd) {
+    res.write("data: ERROR:Python não encontrado.\n\n");
+    setActivity('Ocioso');
+    return res.end();
+  }
+
+  pyProcess = spawn(foundCmd, [`"${scriptPath}"`, `"${req.file.path}"`, `"${outputPath}"`], {
+    shell: true,
+    env: { ...process.env, PYTHONUNBUFFERED: "1" }
+  });
+
+  if (!pyProcess) {
+    res.write("data: ERROR:Falha ao iniciar processo do Python.\n\n");
+    setActivity('Ocioso');
+    return res.end();
+  }
+
+  pyProcess.stdout.on("data", (data) => {
+    const lines = data.toString().split("\n");
+    for (const line of lines) {
+      if (line.trim()) {
+        res.write(`data: ${line.trim()}\n\n`);
+      }
+    }
+  });
+
+  pyProcess.stderr.on("data", (data) => {
+    console.error("Python BG Remover Erro:", data.toString());
+  });
+
+  pyProcess.on("close", (code) => {
+    if (code === 0 && fs.existsSync(outputPath)) {
+        const downloads = readDB(downloadsFile);
+        downloads.push({
+            id: Date.now().toString(),
+            title: outputFileName,
+            type: "img",
+            path: `/Downloads/${outputFileName}`,
+            thumbnail: `/Downloads/${outputFileName}`,
+            date: new Date().toISOString()
+        });
+        writeDB(downloadsFile, downloads);
+    } else {
+        res.write(`data: ERROR:Processo terminou com codigo ${code}\n\n`);
+    }
+    setActivity('Ocioso');
+    res.end();
+  });
 });
 
 module.exports = app;

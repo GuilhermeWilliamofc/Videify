@@ -9,6 +9,8 @@ import urllib.request
 
 url = sys.argv[1]
 formato = sys.argv[2] if len(sys.argv) > 2 else "video"
+# Pasta de destino passada pelo servidor Node.js (o DOWNLOADS_DIR persistente)
+downloads_base = sys.argv[3] if len(sys.argv) > 3 else "Downloads"
 
 def on_progress(stream, chunk, bytes_remaining):
     total_size = stream.filesize
@@ -37,7 +39,7 @@ def sanitizar_nome(nome):
     # - E comercial: &
     # - Underscore: _
     # Tudo fora da lista (inclui –, —, ", ", •, emojis, etc.) é removido.
-    nome = re.sub(r"[^\w\s()\[\]\-'.!?,@&]", '', nome, flags=re.UNICODE)
+    nome = re.sub(r"[^\w\s()\[\]\-'.!,@&]", '', nome, flags=re.UNICODE)
 
     # Colapsa espaços/underscores múltiplos
     nome = re.sub(r' +', ' ', nome)
@@ -50,7 +52,7 @@ def criarpastavideo(url):
     title = video.title
     print(f"TITLE:{title}", flush=True)
     pasta_nome = sanitizar_nome(f'Video - {title}')
-    pasta_download = os.path.join('Downloads', pasta_nome)
+    pasta_download = os.path.join(downloads_base, pasta_nome)
     os.makedirs(pasta_download, exist_ok=True)
     
     thumb_path = os.path.join(pasta_download, 'thumbnail.jpg')

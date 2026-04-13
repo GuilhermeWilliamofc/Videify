@@ -9,6 +9,7 @@ const TRANSLATIONS = {
     nav_scripts:   'Roteiros',
     nav_downloads: 'Downloads',
     nav_about:     'Sobre',
+    nav_bg:        'Remover Fundo',
     lang_btn:      '🌐 EN',
     theme_dark:    '🌙',
     theme_light:   '☀️',
@@ -19,6 +20,7 @@ const TRANSLATIONS = {
     nav_scripts:   'Scripts',
     nav_downloads: 'Downloads',
     nav_about:     'About',
+    nav_bg:        'Remove Background',
     lang_btn:      '🌐 PT',
     theme_dark:    '🌙',
     theme_light:   '☀️',
@@ -56,6 +58,7 @@ function applyLang(lang) {
     'vfy-nav-scripts':   t.nav_scripts,
     'vfy-nav-downloads': t.nav_downloads,
     'vfy-nav-about':     t.nav_about,
+    'vfy-nav-bg':        t.nav_bg,
   };
 
   Object.entries(map).forEach(([id, text]) => {
@@ -216,6 +219,13 @@ const FORM_TRANSLATIONS = {
     'status-unsaved':       '⚠️ Mudanças não salvas...',
     'status-saved':         '✔️ Salvo',
     'script-warning-autosave': '⚠️ <strong>Primeiro Roteiro?</strong> Salve manualmente ao menos uma vez (botão Enviar). O salvamento automático apenas previne perda de dados temporária.',
+    
+    // Background removal
+    'bg-title':             'Remover Fundo de Imagem',
+    'bg-subtitle':          'Remova fundos rapidamente com inteligência artificial, sem enviar para a internet.',
+    'bg-label-file':        '1. Selecione a imagem:',
+    'bg-preview-label':     'Visualização:',
+    'bg-btn-submit':        'Remover Fundo',
   },
   en: {
     // common
@@ -343,6 +353,13 @@ const FORM_TRANSLATIONS = {
     'status-unsaved':       '⚠️ Unsaved changes...',
     'status-saved':         '✔️ Saved',
     'script-warning-autosave': '⚠️ <strong>New Script?</strong> Save manually at least once (Submit button). Autosave only prevents temporary data loss.',
+
+    // Background removal
+    'bg-title':             'Remove Image Background',
+    'bg-subtitle':          'Remove backgrounds quickly with artificial intelligence, without uploading to the internet.',
+    'bg-label-file':        '1. Select the image:',
+    'bg-preview-label':     'Preview:',
+    'bg-btn-submit':        'Remove Background',
   }
 };
 
@@ -393,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAutoSave();
   initUndoRedoNotifications();
   initWordCounter();
+  initDiscordHeartbeat();
 });
 
 // ---- Utility functions --------------------------------------------
@@ -733,4 +751,27 @@ function initWordCounter() {
     updateCounter();
 }
 
+// ==== Discord Presence Heartbeat ====
+function initDiscordHeartbeat() {
+    let lastPing = 0;
+    const pingDelay = 60000; // 1 minuto entre pings
+    
+    function ping() {
+        const now = Date.now();
+        if (now - lastPing > pingDelay) {
+            lastPing = now;
+            fetch('/api/presence_ping', { method: 'POST', body: '{}' }).catch(err => {
+                // silencioso
+            });
+        }
+    }
+    
+    // Ping inicial ao carregar a página
+    ping();
+    
+    // Pings com base na atividade do usuário
+    document.addEventListener('mousemove', ping, { passive: true });
+    document.addEventListener('keydown', ping, { passive: true });
+    document.addEventListener('click', ping, { passive: true });
+}
 

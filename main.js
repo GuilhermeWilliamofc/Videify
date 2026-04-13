@@ -75,3 +75,9 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
+const { initDiscord } = require('./discord_presence');
+
+app.whenReady().then(() => {
+  initDiscord();
+});
+

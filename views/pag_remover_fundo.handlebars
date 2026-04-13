@@ -1,0 +1,165 @@
+<div class="row w-100">
+    <div class="col mt-4 gap-4">
+        <h1 class="display-4 fw-bold" data-i18n="bg-title">Remover Fundo de Imagem</h1>
+        <p class="lead" data-i18n="bg-subtitle">Remova fundos rapidamente com inteligência artificial, sem enviar para a internet.</p>
+        <hr class="my-4">
+
+        <div class="card w-100 mb-4 p-3 shadow-sm" style="border-radius: 12px; background-color: var(--bg-card2); border-color: var(--border-color);">
+            <div class="card-body">
+                <form id="bg-remove-form" enctype="multipart/form-data">
+                    <label style="font-weight: bold; margin-bottom: 5px;" data-i18n="bg-label-file">1. Selecione a imagem:</label>
+                    <div class="input w-100 d-flex flex-column align-items-start mb-3" style="gap: 10px;">
+                        <input type="file" id="image_file" name="image_file" accept=".jpg, .jpeg, .png, .webp" required class="form-control" style="background-color: var(--input-bg); color: var(--text-main); border-color: var(--border-color);">
+                    </div>
+                </form>
+                
+                <div class="mt-4" id="bg-preview-container" style="display: none;">
+                    <label style="font-weight: bold; margin-bottom: 10px;" data-i18n="bg-preview-label">Visualização:</label>
+                    <div class="d-flex justify-content-center align-items-center w-100 p-3" style="border: 2px dashed var(--border-color); border-radius: 12px; min-height: 200px; background-color: rgba(0,0,0,0.05);">
+                        <img id="bg-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 400px; object-fit: contain; border-radius: 8px; display: none;">
+                    </div>
+                </div>
+
+                <div class="mt-4" id="bg-progress-container" style="display: none; border: 2px solid var(--border-color); padding: 15px; border-radius: 10px;">
+                    <p id="bg-status-text" class="fw-bold mb-2">Processando...</p>
+                    <div class="progress" style="height: 25px; border-radius: 8px; background-color: var(--progress-bg);">
+                        <div id="bg-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%; background-color: var(--btn-primary); font-weight: bold; line-height: 25px;">0%</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex" style="gap: 10px;">
+                    <button type="button" class="botao flex-grow-1" id="bg-btn-remove" onclick="startBgRemoval()" style="font-weight:bold; font-size: 1.1rem; padding: 12px;">
+                        ✨ <span data-i18n="bg-btn-submit">Remover Fundo</span>
+                    </button>
+                    <button type="button" class="botao" onclick="limparFundo()" style="background-color: var(--cancel-color); border-color: var(--cancel-border); color:#222; font-weight:bold;">
+                        <span data-i18n="dl-btn-clear">Limpar</span>
+                    </button>
+                </div>
+
+                <div id="bg-result-container" class="mt-4 text-center" style="display: none;">
+                     <hr>
+                     <p class="text-success fw-bold fs-5 mt-3">✅ <span data-i18n="status-saved">Concluído</span></p>
+                     <button type="button" class="botao mt-2" onclick="openResultFolder()" style="background-color: #28a745; border-color: #218838;">
+                        📂 <span data-i18n="btn-open-folder">Abrir Local</span>
+                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentResultPath = "";
+
+    document.getElementById('image_file').addEventListener('change', function(e) {
+        if(e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('bg-preview-container').style.display = 'block';
+                const previewImg = document.getElementById('bg-preview-img');
+                previewImg.src = evt.target.result;
+                previewImg.style.display = 'block';
+                // Reset result
+                document.getElementById('bg-progress-container').style.display = 'none';
+                document.getElementById('bg-result-container').style.display = 'none';
+                document.getElementById('bg-btn-remove').disabled = false;
+                document.getElementById('bg-progress-bar').style.width = '0%';
+                document.getElementById('bg-progress-bar').innerText = '0%';
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
+    function limparFundo() {
+        document.getElementById('image_file').value = "";
+        document.getElementById('bg-preview-container').style.display = 'none';
+        document.getElementById('bg-preview-img').src = "";
+        document.getElementById('bg-progress-container').style.display = 'none';
+        document.getElementById('bg-result-container').style.display = 'none';
+        document.getElementById('bg-btn-remove').disabled = false;
+    }
+
+    function startBgRemoval() {
+        const fileInput = document.getElementById('image_file');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            alert('Por favor, selecione uma imagem primeiro.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image_file', fileInput.files[0]);
+
+        document.getElementById('bg-btn-remove').disabled = true;
+        document.getElementById('bg-progress-container').style.display = 'block';
+        document.getElementById('bg-result-container').style.display = 'none';
+        
+        const lang = localStorage.getItem('vfy_lang') || 'pt';
+        const txtProcessing = lang === 'en' ? 'Processing image...' : 'Processando imagem...';
+        document.getElementById('bg-status-text').innerText = txtProcessing;
+
+        // Reset progress
+        updateProgress(0);
+
+        fetch('/api/remover_fundo', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            function read() {
+                reader.read().then(({ done, value }) => {
+                    if (done) return;
+                    const chunk = decoder.decode(value, { stream: true });
+                    const messages = chunk.split("\n\n");
+
+                    for (const msg of messages) {
+                        if (msg.startsWith("data: ")) {
+                            const data = msg.substring(6).trim();
+                            
+                            if (data.startsWith('PROGRESS:')) {
+                                updateProgress(parseInt(data.substring(9)));
+                            } else if (data.startsWith('STATUS:')) {
+                                document.getElementById('bg-status-text').innerText = data.substring(7);
+                            } else if (data.startsWith('DONE:')) {
+                                const outputPath = data.substring(5);
+                                currentResultPath = outputPath;
+                                updateProgress(100);
+                                
+                                // O arquivo ja vai estar em downloads, tentamos mostrar ele no preview
+                                const fileName = outputPath.split('\\').pop().split('/').pop();
+                                document.getElementById('bg-preview-img').src = `/Downloads/${fileName}?t=${new Date().getTime()}`;
+                                
+                                document.getElementById('bg-progress-container').style.display = 'none';
+                                document.getElementById('bg-result-container').style.display = 'block';
+                                document.getElementById('bg-btn-remove').disabled = false;
+                            } else if (data.startsWith('ERROR:')) {
+                                document.getElementById('bg-status-text').innerText = "Erro: " + data.substring(6);
+                                document.getElementById('bg-status-text').style.color = "red";
+                                document.getElementById('bg-btn-remove').disabled = false;
+                            }
+                        }
+                    }
+                    read();
+                });
+            }
+            read();
+        }).catch(err => {
+            console.error(err);
+            document.getElementById('bg-status-text').innerText = "Erro de conexão.";
+            document.getElementById('bg-status-text').style.color = "red";
+            document.getElementById('bg-btn-remove').disabled = false;
+        });
+    }
+
+    function updateProgress(val) {
+        document.getElementById('bg-progress-bar').style.width = val + '%';
+        document.getElementById('bg-progress-bar').innerText = val + '%';
+    }
+
+    function openResultFolder() {
+        if (currentResultPath) {
+            window.openFolder(currentResultPath);
+        }
+    }
+</script>
