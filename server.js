@@ -111,6 +111,9 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Detecta se está rodando no Electron (build) ou em desenvolvimento
+const isElectronBuild = fs.existsSync(path.join(__dirnamePath, 'resources', 'app'));
+
 // Handlebars
 app.engine('handlebars', engine({
   helpers: {
@@ -118,10 +121,59 @@ app.engine('handlebars', engine({
   }
 }));
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirnamePath, 'views'));
 
-// Arquivos estáticos
-app.use(express.static(path.join(__dirnamePath, 'public')));
+// Configura caminhos baseados no ambiente
+let viewsPath, publicPath, scriptsPath;
+
+if (isElectronBuild) {
+  // No build do Electron, tudo está em resources/app/
+  viewsPath = path.join(__dirnamePath, 'resources', 'app', 'views');
+  publicPath = path.join(__dirnamePath, 'resources', 'app', 'public');
+  scriptsPath = path.join(__dirnamePath, 'resources', 'app', 'scripts');
+} else {
+  // No desenvolvimento, tudo está na pasta raiz
+  viewsPath = path.join(__dirnamePath, 'views');
+  publicPath = path.join(__dirnamePath, 'public');
+  scriptsPath = path.join(__dirnamePath, 'scripts');
+}
+
+// Verificação de segurança
+if (!fs.existsSync(viewsPath)) {
+  console.error(`❌ Views directory not found: ${viewsPath}`);
+  // Tenta caminho alternativo como fallback
+  viewsPath = path.join(__dirnamePath, 'views');
+  if (!fs.existsSync(viewsPath)) {
+    console.error('❌ Fallback views directory also not found!');
+  }
+}
+
+if (!fs.existsSync(publicPath)) {
+  console.error(`❌ Public directory not found: ${publicPath}`);
+  // Tenta caminho alternativo como fallback
+  publicPath = path.join(__dirnamePath, 'public');
+  if (!fs.existsSync(publicPath)) {
+    console.error('❌ Fallback public directory also not found!');
+  }
+}
+
+if (!fs.existsSync(scriptsPath)) {
+  console.error(`❌ Scripts directory not found: ${scriptsPath}`);
+  // Tenta caminho alternativo como fallback
+  scriptsPath = path.join(__dirnamePath, 'scripts');
+  if (!fs.existsSync(scriptsPath)) {
+    console.error('❌ Fallback scripts directory also not found!');
+  }
+}
+
+console.log(`📁 Views directory: ${viewsPath}`);
+console.log(`📁 Public directory: ${publicPath}`);
+console.log(`📁 Scripts directory: ${scriptsPath}`);
+
+app.set('views', viewsPath);
+app.use(express.static(publicPath));
+
+// Exporta o caminho dos scripts para uso em outras rotas
+app.locals.scriptsPath = scriptsPath;
 // Serve arquivos de media do diretório persistente
 app.use('/Downloads', express.static(DOWNLOADS_DIR));
 
@@ -420,7 +472,7 @@ app.post('/open-folder', (req, res) => {
 
 const { execFile, spawn } = require("child_process");
 
-// Rota para buscar informações de playlist
+  // Rota para buscar informações de playlist
 app.post("/api/playlist-info", (req, res) => {
   const { url } = req.body;
 
@@ -434,7 +486,7 @@ app.post("/api/playlist-info", (req, res) => {
     return res.end();
   }
 
-  const scriptPath = path.join(__dirnamePath, "scripts", "buscar_playlist.py");
+  const scriptPath = path.join(app.locals.scriptsPath, "buscar_playlist.py");
   const pythonCmds = ["python", "python3", "py"];
   let pyProcess = null;
   let foundCmd = null;
@@ -525,7 +577,7 @@ app.post("/baixar-stream", (req, res) => {
   }
 
   if (tipo === "yt") {
-    const scriptPath = path.join(__dirnamePath, "scripts", "baixar_youtube.py");
+    const scriptPath = path.join(app.locals.scriptsPath, "baixar_youtube.py");
     // Tenta 'python', 'python3' e 'py' para compatibilidade com diferentes instalações do Windows
     // shell: true é necessário para que o Electron encontre o Python no PATH do sistema
     // mesmo quando iniciado por clique duplo (sem terminal)
@@ -727,7 +779,7 @@ app.post("/baixar", (req, res) => {
   }
 });
 
-// Remover fundo
+  // Remover fundo
 app.post("/api/remover_fundo", upload.single('image_file'), (req, res) => {
   if (!req.file) {
     return res.status(400).send("Nenhuma imagem selecionada.");
@@ -740,7 +792,7 @@ app.post("/api/remover_fundo", upload.single('image_file'), (req, res) => {
 
   setActivity('Editando imagem');
 
-  const scriptPath = path.join(__dirnamePath, "scripts", "remover_fundo.py");
+  const scriptPath = path.join(app.locals.scriptsPath, "remover_fundo.py");
   if (!fs.existsSync(DOWNLOADS_DIR)) fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
   
   const ext = path.extname(req.file.originalname) || ".png";

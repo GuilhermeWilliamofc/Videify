@@ -385,6 +385,10 @@ select {
   color: var(--text-main) !important;
 }
 
+[data-theme="dark"] #playlistModal .select-all-container strong {
+  color: #ffffff !important;
+}
+
 [data-theme="dark"] #playlistModal button {
   color: white !important;
 }

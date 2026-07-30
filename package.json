@@ -4,7 +4,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "npx electron-packager . Videify --platform=win32 --arch=x64 --out=release-builds --overwrite --icon=public/images/icon.ico --ignore=\"^/release-builds|\\.git(ignore)?$\"",
+    "build": "npx electron-packager . Videify --platform=win32 --arch=x64 --out=release-builds --overwrite --icon=public/images/icon.ico --ignore=\"^/(release-builds|\\.git(ignore)?$|\\.venv|docs|downloads|data|restart\\.bat|README\\.md)\"",
     "postbuild": "node scripts/postbuild.js"
   },
   "dependencies": {

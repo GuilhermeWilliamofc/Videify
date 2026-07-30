@@ -8,7 +8,7 @@ Videify é uma aplicação desktop completa para criadores de conteúdo, permiti
 
 ## Status do Projeto
 
-- **Versão:** 1.0.0
+- **Versão:** 1.1.0
 - **Status:** Produção
 - **Plataforma:** Windows x64 (Electron)
 - **Linguagens:** JavaScript (Node.js), Python
@@ -296,6 +296,43 @@ O sistema tenta executar Python usando (nesta ordem):
 - SSE para feedback em tempo real
 - Session baseada em memória (não persiste entre reinicializações)
 - Python executado via spawn com shell:true (Windows)
+
+## Novas Funcionalidades (v1.1.0)
+
+### 1. Tratamento Robusto de Erros do YouTube
+- 10+ tipos de erros tratados com mensagens claras
+- Bot detection (po_token)
+- Vídeo indisponível/privado/deletado
+- Restrição de idade
+- Bloqueio geográfico
+- Vídeos exclusivos para membros
+- Transmissões ao vivo
+- Mudanças na API
+- Formato indisponível
+- Erros de rede com retry automático (3x)
+- Erros de sistema (permissões, disco cheio, FFmpeg)
+
+### 2. Suporte Completo para Playlists
+- Busca informações de todos os vídeos da playlist
+- Modal interativo com thumbnails (carregadas temporariamente)
+- Exibição de título, canal e duração de cada vídeo
+- Seleção individual ou "Selecionar todos"
+- Download sequencial com progresso por vídeo
+- Resumo final com sucessos/falhas
+- Tema dark otimizado para modal
+
+### 3. Melhorias de Build
+- Estrutura otimizada sem duplicações
+- Tamanho reduzido (429.74 MB)
+- Caminhos corretos para views, public e scripts
+- Compatibilidade com desenvolvimento e produção
+- Script de reinicialização para limpar cache
+
+### 4. Melhorias de UI
+- Cores legíveis no tema dark
+- Modal responsivo com grid de vídeos
+- Feedback visual para seleção de vídeos
+- Mensagens de erro claras e acionáveis
 
 ## Segurança
 

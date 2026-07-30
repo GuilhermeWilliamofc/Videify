@@ -1,8 +1,8 @@
 # PRD - Product Requirements Document
 ## Videify - Ferramenta All-in-One para Criadores de Conteúdo
 
-**Versão:** 1.0.0  
-**Data:** 30/07/2026  
+**Versão:** 1.1.0   
+**Data:** 31/07/2026   
 **Status:** Produção
 
 ---
