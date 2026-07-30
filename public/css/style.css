@@ -347,3 +347,44 @@ select {
   width: 100%;
   margin-bottom: 5px;
 }
+
+/* ---- Playlist Modal (Dark Theme Support) --------------------- */
+[data-theme="dark"] #playlistModal > div {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] #playlistModal h2 {
+  color: var(--text-main) !important;
+}
+
+[data-theme="dark"] #playlistModal .video-card {
+  background-color: var(--bg-card2) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] #playlistModal .video-card:hover {
+  border-color: var(--btn-primary) !important;
+}
+
+[data-theme="dark"] #playlistModal .video-card.selected {
+  background-color: var(--input-bg) !important;
+  border-color: var(--btn-primary) !important;
+}
+
+[data-theme="dark"] #playlistModal .video-title {
+  color: var(--text-main) !important;
+}
+
+[data-theme="dark"] #playlistModal .video-channel {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] #playlistModal .select-all-container {
+  background-color: var(--bg-card2) !important;
+  color: var(--text-main) !important;
+}
+
+[data-theme="dark"] #playlistModal button {
+  color: white !important;
+}

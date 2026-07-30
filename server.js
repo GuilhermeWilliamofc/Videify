@@ -420,6 +420,96 @@ app.post('/open-folder', (req, res) => {
 
 const { execFile, spawn } = require("child_process");
 
+// Rota para buscar informações de playlist
+app.post("/api/playlist-info", (req, res) => {
+  const { url } = req.body;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  if (!url) {
+    res.write("data: " + JSON.stringify({success: false, error: "URL não fornecida"}) + "\n\n");
+    return res.end();
+  }
+
+  const scriptPath = path.join(__dirnamePath, "scripts", "buscar_playlist.py");
+  const pythonCmds = ["python", "python3", "py"];
+  let pyProcess = null;
+  let foundCmd = null;
+
+  // Encontra comando Python disponível
+  for (const cmd of pythonCmds) {
+    try {
+      const { spawnSync } = require('child_process');
+      const check = spawnSync(cmd, ['--version'], { shell: true });
+      if (check.status === 0) {
+        foundCmd = cmd;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  if (!foundCmd) {
+    res.write("data: " + JSON.stringify({
+      success: false, 
+      error: "Python não encontrado. Instale o Python e marque 'Add Python to PATH'."
+    }) + "\n\n");
+    return res.end();
+  }
+
+  pyProcess = spawn(foundCmd, [`"${scriptPath}"`, `"${url}"`], {
+    shell: true,
+    env: { ...process.env, PYTHONUNBUFFERED: "1" }
+  });
+
+  if (!pyProcess || !pyProcess.pid) {
+    res.write("data: " + JSON.stringify({
+      success: false,
+      error: "Não foi possível iniciar o processo Python."
+    }) + "\n\n");
+    return res.end();
+  }
+
+  let outputBuffer = "";
+
+  pyProcess.stdout.on("data", (data) => {
+    outputBuffer += data.toString();
+    const lines = outputBuffer.split("\n");
+    
+    // Processa todas as linhas completas
+    for (let i = 0; i < lines.length - 1; i++) {
+      const line = lines[i].trim();
+      if (line) {
+        res.write(`data: ${line}\n\n`);
+      }
+    }
+    
+    // Mantém a última linha incompleta no buffer
+    outputBuffer = lines[lines.length - 1];
+  });
+
+  pyProcess.stderr.on("data", (data) => {
+    console.error("Python Playlist Erro:", data.toString());
+  });
+
+  pyProcess.on("close", (code) => {
+    // Processa qualquer dado restante no buffer
+    if (outputBuffer.trim()) {
+      res.write(`data: ${outputBuffer.trim()}\n\n`);
+    }
+    
+    if (code !== 0) {
+      res.write("data: " + JSON.stringify({
+        success: false,
+        error: `Processo terminou com erro (código ${code})`
+      }) + "\n\n");
+    }
+    res.end();
+  });
+});
+
 app.post("/baixar-stream", (req, res) => {
   const { tipo, link, formato } = req.body;
   const formatChoice = formato || "video";
@@ -478,6 +568,8 @@ app.post("/baixar-stream", (req, res) => {
     let currentTitle = "";
     let currentThumb = "";
     let finalPath = "";
+    let errorType = "";
+    let hasError = false;
 
     pyProcess.stdout.on("data", (data) => {
       const lines = data.toString().split("\n");
@@ -487,6 +579,13 @@ app.post("/baixar-stream", (req, res) => {
           if (text.startsWith("TITLE:")) currentTitle = text.substring(6);
           if (text.startsWith("THUMBNAIL:")) currentThumb = text.substring(10);
           if (text.startsWith("DONE:")) finalPath = text.substring(5);
+          if (text.startsWith("ERROR_TYPE:")) {
+            errorType = text.substring(11);
+            hasError = true;
+          }
+          if (text.startsWith("ERROR:")) {
+            hasError = true;
+          }
           res.write(`data: ${text}\n\n`);
         }
       }
@@ -495,14 +594,21 @@ app.post("/baixar-stream", (req, res) => {
     pyProcess.stderr.on("data", (data) => {
       const output = data.toString();
       console.error("Python Erro:", output);
-      // Se houver erro de arquivo não encontrado vindo diretamente do Python (antes do nosso try/except interno)
+      
+      // Erros críticos antes do try/catch do Python
       if (output.includes("can't open file") && output.includes("Errno 2")) {
-          res.write(`data: ERROR:O Python não conseguiu localizar o script de download. Verifique se o caminho da pasta não contém caracteres especiais ou se a pasta 'scripts' existe.\n\n`);
+          res.write(`data: ERROR_TYPE:SCRIPT_NOT_FOUND\n\n`);
+          res.write(`data: ERROR:O Python não conseguiu localizar o script de download. Verifique se a pasta 'scripts' existe.\n\n`);
+          hasError = true;
+      } else if (output.includes("ModuleNotFoundError") || output.includes("No module named")) {
+          res.write(`data: ERROR_TYPE:MISSING_DEPENDENCIES\n\n`);
+          res.write(`data: ERROR:Dependências Python não instaladas. Execute: pip install pytubefix\n\n`);
+          hasError = true;
       }
     });
 
     pyProcess.on("close", (code) => {
-      if (code === 0 && finalPath) {
+      if (code === 0 && finalPath && !hasError) {
         const downloads = readDB(downloadsFile);
         downloads.push({
             id: Date.now().toString(),
@@ -513,13 +619,17 @@ app.post("/baixar-stream", (req, res) => {
             date: new Date().toISOString()
         });
         writeDB(downloadsFile, downloads);
+      } else if (hasError) {
+        // Erros já foram enviados via stdout com ERROR_TYPE e ERROR
+        console.log(`Download falhou com tipo de erro: ${errorType || 'desconhecido'}`);
       } else if (code === 9009) {
-        res.write(`data: ERROR:Python não encontrado (código 9009). Você precisa instalar o Python e OBRIGATORIAMENTE marcar 'Add Python to PATH' na instalação.\n\n`);
+        res.write(`data: ERROR_TYPE:PYTHON_NOT_FOUND\n\n`);
+        res.write(`data: ERROR:Python não encontrado (código 9009). Instale o Python e marque 'Add Python to PATH'.\n\n`);
       } else if (code === 2) {
-        res.write(`data: ERROR:Erro de acesso ao arquivo (código 2). Isso geralmente acontece quando o caminho da pasta tem espaços ou caracteres especiais. Tente mover o Videify para uma pasta mais simples, como C:\\Videify\n\n`);
-      } else if (code === 1) {
-        res.write(`data: ERROR:Erro no script Python. Verifique se o pacote 'pytubefix' está instalado: pip install pytubefix\n\n`);
+        res.write(`data: ERROR_TYPE:FILE_ACCESS_ERROR\n\n`);
+        res.write(`data: ERROR:Erro de acesso ao arquivo (código 2). Verifique se o caminho não contém caracteres especiais.\n\n`);
       } else if (code !== 0) {
+        res.write(`data: ERROR_TYPE:PROCESS_ERROR\n\n`);
         res.write(`data: ERROR:Processo terminou com erro (código ${code})\n\n`);
       }
       res.end();

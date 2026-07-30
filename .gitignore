@@ -7,3 +7,6 @@ scripts/ffmpeg.exe
 *.log
 .DS_Store
 release-builds/
+__pycache__/
+*.pyc
+*.pyo
