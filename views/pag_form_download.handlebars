@@ -128,78 +128,93 @@
                     let buffer = "";
                     let finalData = null;
 
+                    console.log("🎬 Iniciando carregamento da playlist...");
+
                     while (!done) {
                         const { value, done: readerDone } = await reader.read();
                         done = readerDone;
                         
                         if (value) {
-                            buffer += decoder.decode(value, { stream: true });
+                            const chunk = decoder.decode(value, { stream: true });
+                            buffer += chunk;
+                            
+                            // Divide por linhas SSE (cada linha começa com "data: ")
                             const lines = buffer.split('\n');
                             
-                            // Processa todas as linhas completas, mantém a última incompleta
-                            for (let i = 0; i < lines.length - 1; i++) {
-                                const line = lines[i].trim();
-                                if (line.startsWith('data: ')) {
-                                    const jsonStr = line.substring(6).trim();
+                            // Mantém a última linha (pode estar incompleta)
+                            buffer = lines.pop() || "";
+                            
+                            // Processa todas as linhas completas
+                            for (const line of lines) {
+                                const trimmed = line.trim();
+                                if (trimmed.startsWith('data: ')) {
+                                    const jsonStr = trimmed.substring(6).trim();
                                     if (jsonStr) {
                                         try {
                                             const data = JSON.parse(jsonStr);
+                                            console.log("📦 Dados recebidos:", data);
                                             
                                             if (data.status) {
                                                 statusMsg.innerText = data.status;
                                             }
-                                            if (data.progress) {
-                                                // Exibe progresso se necessário
-                                            }
                                             if (data.success === true) {
-                                                // Guarda os dados finais
+                                                console.log("✅ Playlist carregada com sucesso!", data.videos?.length, "vídeos");
                                                 finalData = data;
                                             } else if (data.success === false) {
-                                                // Erro ao carregar playlist
+                                                console.error("❌ Erro ao carregar playlist:", data.error);
                                                 resultContainer.innerHTML = `<div style="padding: 15px; margin-top: 10px; border-radius: 4px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;"><strong>Erro:</strong> ${data.error}</div>`;
                                                 progressContainer.style.display = 'none';
                                                 return;
                                             }
                                         } catch (e) {
-                                            console.error("Erro ao parsear JSON:", e, "String:", jsonStr);
+                                            console.error("⚠️ Erro ao parsear JSON:", e, "\nString:", jsonStr.substring(0, 200));
                                         }
                                     }
                                 }
                             }
-                            
-                            buffer = lines[lines.length - 1];
                         }
                     }
                     
-                    // Processa qualquer linha final restante
+                    // Processa buffer final (última linha que pode ter ficado)
                     if (buffer.trim()) {
-                        const line = buffer.trim();
-                        if (line.startsWith('data: ')) {
-                            const jsonStr = line.substring(6).trim();
-                            if (jsonStr) {
-                                try {
-                                    const data = JSON.parse(jsonStr);
-                                    if (data.success === true) {
-                                        finalData = data;
+                        console.log("📝 Processando buffer final:", buffer.substring(0, 100) + "...");
+                        const lines = buffer.split('\n');
+                        for (const line of lines) {
+                            const trimmed = line.trim();
+                            if (trimmed.startsWith('data: ')) {
+                                const jsonStr = trimmed.substring(6).trim();
+                                if (jsonStr) {
+                                    try {
+                                        const data = JSON.parse(jsonStr);
+                                        console.log("📦 Dados finais:", data);
+                                        if (data.success === true) {
+                                            console.log("✅ Dados finais válidos com", data.videos?.length, "vídeos");
+                                            finalData = data;
+                                        }
+                                    } catch (e) {
+                                        console.error("⚠️ Erro ao parsear buffer final:", e);
                                     }
-                                } catch (e) {
-                                    console.error("Erro ao parsear JSON final:", e);
                                 }
                             }
                         }
                     }
                     
+                    console.log("🏁 Stream finalizado. finalData:", finalData ? `${finalData.videos?.length} vídeos` : "null");
+                    
                     // Exibe o modal se temos dados
                     if (finalData && finalData.videos && finalData.videos.length > 0) {
+                        console.log("🎉 Abrindo modal com", finalData.videos.length, "vídeos");
                         playlistVideosData = finalData.videos;
                         currentPlaylistFormat = formato;
                         showPlaylistModal(finalData);
                         progressContainer.style.display = 'none';
                     } else {
+                        console.error("❌ Nenhum vídeo encontrado. finalData:", finalData);
                         resultContainer.innerHTML = `<div style="padding: 15px; margin-top: 10px; border-radius: 4px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;"><strong>Erro:</strong> Nenhum vídeo encontrado na playlist.</div>`;
                         progressContainer.style.display = 'none';
                     }
                 } catch (err) {
+                    console.error("💥 Erro na requisição:", err);
                     resultContainer.innerHTML = `<div style="padding: 15px; margin-top: 10px; border-radius: 4px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;"><strong>Erro:</strong> ${err.message}</div>`;
                     progressContainer.style.display = 'none';
                 }
