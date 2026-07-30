@@ -138,36 +138,38 @@
                             const chunk = decoder.decode(value, { stream: true });
                             buffer += chunk;
                             
-                            // Divide por linhas SSE (cada linha começa com "data: ")
-                            const lines = buffer.split('\n');
-                            
-                            // Mantém a última linha (pode estar incompleta)
-                            buffer = lines.pop() || "";
-                            
-                            // Processa todas as linhas completas
-                            for (const line of lines) {
-                                const trimmed = line.trim();
-                                if (trimmed.startsWith('data: ')) {
-                                    const jsonStr = trimmed.substring(6).trim();
-                                    if (jsonStr) {
-                                        try {
-                                            const data = JSON.parse(jsonStr);
-                                            console.log("📦 Dados recebidos:", data);
-                                            
-                                            if (data.status) {
-                                                statusMsg.innerText = data.status;
+                            // Processa linha por linha quando encontrar \n\n (separador SSE)
+                            let sseEndIndex;
+                            while ((sseEndIndex = buffer.indexOf('\n\n')) !== -1) {
+                                const sseMessage = buffer.substring(0, sseEndIndex);
+                                buffer = buffer.substring(sseEndIndex + 2);
+                                
+                                // Cada mensagem SSE pode ter múltiplas linhas começando com "data: "
+                                const lines = sseMessage.split('\n');
+                                for (const line of lines) {
+                                    const trimmed = line.trim();
+                                    if (trimmed.startsWith('data: ')) {
+                                        const jsonStr = trimmed.substring(6).trim();
+                                        if (jsonStr) {
+                                            try {
+                                                const data = JSON.parse(jsonStr);
+                                                console.log("📦 Dados recebidos:", data.success !== undefined ? `success=${data.success}, videos=${data.videos?.length}` : data.status || data.progress);
+                                                
+                                                if (data.status) {
+                                                    statusMsg.innerText = data.status;
+                                                }
+                                                if (data.success === true) {
+                                                    console.log("✅ Playlist carregada com sucesso!", data.videos?.length, "vídeos");
+                                                    finalData = data;
+                                                } else if (data.success === false) {
+                                                    console.error("❌ Erro ao carregar playlist:", data.error);
+                                                    resultContainer.innerHTML = `<div style="padding: 15px; margin-top: 10px; border-radius: 4px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;"><strong>Erro:</strong> ${data.error}</div>`;
+                                                    progressContainer.style.display = 'none';
+                                                    return;
+                                                }
+                                            } catch (e) {
+                                                console.error("⚠️ Erro ao parsear JSON:", e, "\nString (primeiros 200 chars):", jsonStr.substring(0, 200));
                                             }
-                                            if (data.success === true) {
-                                                console.log("✅ Playlist carregada com sucesso!", data.videos?.length, "vídeos");
-                                                finalData = data;
-                                            } else if (data.success === false) {
-                                                console.error("❌ Erro ao carregar playlist:", data.error);
-                                                resultContainer.innerHTML = `<div style="padding: 15px; margin-top: 10px; border-radius: 4px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;"><strong>Erro:</strong> ${data.error}</div>`;
-                                                progressContainer.style.display = 'none';
-                                                return;
-                                            }
-                                        } catch (e) {
-                                            console.error("⚠️ Erro ao parsear JSON:", e, "\nString:", jsonStr.substring(0, 200));
                                         }
                                     }
                                 }
@@ -175,9 +177,9 @@
                         }
                     }
                     
-                    // Processa buffer final (última linha que pode ter ficado)
+                    // Processa qualquer buffer restante (caso o stream termine sem \n\n final)
                     if (buffer.trim()) {
-                        console.log("📝 Processando buffer final:", buffer.substring(0, 100) + "...");
+                        console.log("📝 Processando buffer final...");
                         const lines = buffer.split('\n');
                         for (const line of lines) {
                             const trimmed = line.trim();
@@ -186,7 +188,7 @@
                                 if (jsonStr) {
                                     try {
                                         const data = JSON.parse(jsonStr);
-                                        console.log("📦 Dados finais:", data);
+                                        console.log("📦 Dados do buffer final:", data.success !== undefined ? `success=${data.success}, videos=${data.videos?.length}` : data);
                                         if (data.success === true) {
                                             console.log("✅ Dados finais válidos com", data.videos?.length, "vídeos");
                                             finalData = data;
