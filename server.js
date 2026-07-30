@@ -459,7 +459,7 @@ app.post("/api/playlist-info", (req, res) => {
     return res.end();
   }
 
-  pyProcess = spawn(foundCmd, [`"${scriptPath}"`, `"${url}"`], {
+  pyProcess = spawn(foundCmd, [scriptPath, url], {
     shell: true,
     env: { ...process.env, PYTHONUNBUFFERED: "1" }
   });
