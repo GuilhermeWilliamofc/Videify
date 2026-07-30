@@ -25,11 +25,6 @@ def validar_url_playlist(url):
 def buscar_info_playlist(url):
     """Busca informações de todos os vídeos da playlist"""
     try:
-        # Debug: mostra a URL recebida
-        print(json.dumps({
-            "debug": f"URL recebida: {url}"
-        }), flush=True)
-        
         if not validar_url_playlist(url):
             print(json.dumps({
                 "success": False,
@@ -43,11 +38,6 @@ def buscar_info_playlist(url):
         }), flush=True)
         
         playlist = Playlist(url)
-        
-        # Debug: mostra quantos vídeos foram encontrados
-        print(json.dumps({
-            "debug": f"Playlist carregada, {len(playlist.video_urls)} URLs encontradas"
-        }), flush=True)
         
         print(json.dumps({
             "status": f"Buscando informações de {len(playlist.video_urls)} vídeos..."

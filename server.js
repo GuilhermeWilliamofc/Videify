@@ -482,7 +482,6 @@ app.post("/api/playlist-info", (req, res) => {
     for (let i = 0; i < lines.length - 1; i++) {
       const line = lines[i].trim();
       if (line) {
-        console.log(`📤 Enviando linha (${line.length} chars):`, line.substring(0, 100) + "...");
         res.write(`data: ${line}\n\n`);
       }
     }
@@ -498,19 +497,7 @@ app.post("/api/playlist-info", (req, res) => {
   pyProcess.on("close", (code) => {
     // Processa qualquer dado restante no buffer
     if (outputBuffer.trim()) {
-      const finalLine = outputBuffer.trim();
-      console.log(`📤 Enviando linha FINAL (${finalLine.length} chars):`, finalLine.substring(0, 100) + "...");
-      res.write(`data: ${finalLine}\n\n`);
-      
-      // Debug: verifica se é o JSON de sucesso
-      try {
-        const parsed = JSON.parse(finalLine);
-        if (parsed.success === true) {
-          console.log(`✅ JSON final contém ${parsed.videos?.length} vídeos`);
-        }
-      } catch (e) {
-        console.error("⚠️ Linha final não é JSON válido");
-      }
+      res.write(`data: ${outputBuffer.trim()}\n\n`);
     }
     
     if (code !== 0) {
@@ -519,8 +506,6 @@ app.post("/api/playlist-info", (req, res) => {
         error: `Processo terminou com erro (código ${code})`
       }) + "\n\n");
     }
-    
-    console.log("🏁 Stream finalizado, código de saída:", code);
     res.end();
   });
 });
